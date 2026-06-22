@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sustainable Swiss Home — Product Specification</title>
+<link rel="stylesheet" href="spec.css">
+</head>
+<body>
+<div class="shell">
+
+  <!-- ============ STICKY NAV ============ -->
+  <nav class="toc">
+    <div class="brandmark">
+      <div class="glyph"></div>
+      <div class="wordmark">Sustainable<span>Swiss Home</span></div>
+    </div>
+    <p class="kicker">Product Spec · v0.1</p>
+    <ol>
+      <li><a href="#overview">Overview &amp; vision</a></li>
+      <li><a href="#problem">The problem we solve</a></li>
+      <li><a href="#users">Who it's for</a></li>
+      <li><a href="#principles">Design principles</a></li>
+      <li><a href="#experience">The experience, in three acts</a></li>
+      <li><a href="#configurator">The Reimagine configurator</a></li>
+      <li><a href="#finance">Money: financing &amp; subsidies</a></li>
+      <li><a href="#sustainability">The sustainability layer</a></li>
+      <li><a href="#connect">From vision to build</a></li>
+      <li><a href="#ia">Architecture &amp; data</a></li>
+      <li><a href="#scope">Scope &amp; the prototype</a></li>
+      <li><a href="#questions">Open questions</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+    <div class="wrap">
+
+      <!-- HERO -->
+      <header class="hero">
+        <div class="doc-meta">
+          <div class="pill">Product Specification</div>
+          <div class="pill">Zürich · <span>Switzerland</span></div>
+          <div class="pill">Desktop web</div>
+          <div class="pill"><span>v0.1 draft</span></div>
+        </div>
+        <h1>Reimagine your home.<br>See the <em>cost</em>, the <span class="u">carbon</span>,<br>and the path to build it.</h1>
+        <p class="lede">A desktop tool for people buying or improving a home in Switzerland. Find a property, redraw and upgrade it to <strong>Minergie-grade</strong> standards, and watch the <strong>price, energy rating, and financing</strong> update with every choice — then hand the finished vision to the banks, architects, and builders who can make it real.</p>
+        <div class="namebar">
+          <span>Product:</span> <b>Sustainable Swiss Home</b>
+          <span>— the daydream-to-dossier tool for</span> <b class="em">sustainable, Minergie-grade</b> <span>renovation &amp; first-time buying in Switzerland.</span>
+        </div>
+      </header>
+
+      <!-- 1. OVERVIEW -->
+      <section class="sec" id="overview">
+        <div class="sec-head"><div class="sec-num">01</div><h2>Overview &amp; vision</h2></div>
+        <p class="sec-intro">Sustainable Swiss Home turns the daydream of "what could this place become?" into a concrete, costed, financeable plan — without needing an architect in the room to start.</p>
+
+        <p>Today, the gap between <em>wanting</em> a sustainable home and <em>having</em> one is mostly imagination and arithmetic. A first-time buyer sees a tired 1970s apartment and can't picture the triple-glazed, heat-pumped, light-filled version it could be — let alone what that costs, what the state pays back, or who to call. Sustainable Swiss Home closes that gap on a single screen.</p>
+
+        <p>The product is built around one loop: <strong>choose a change → see its full impact → keep going.</strong> Every material swap, every wall moved, every heat pump added updates a live ledger of <strong>cost, energy rating, CO₂, eligible subsidies, value uplift, and monthly mortgage delta.</strong> When the vision feels right, it becomes a structured dossier that real professionals can pick up and run with.</p>
+
+        <div class="magic">
+          <span class="lbl">★ The magic moment</span>
+          <p>You drag a heat pump into your basement and a slider moves: your energy label climbs from <strong>E to B</strong>, CHF <strong>14'000 in cantonal subsidy</strong> appears, and your monthly payment ticks up by the price of a few dinners out. Suddenly the abstract becomes <strong>obvious, affordable, and yours to build.</strong></p>
+        </div>
+      </section>
+
+      <!-- 2. PROBLEM -->
+      <section class="sec" id="problem">
+        <div class="sec-head"><div class="sec-num">02</div><h2>The problem we solve</h2></div>
+        <div class="grid g2">
+          <div class="card">
+            <span class="lbl">For the buyer / renovator</span>
+            <p style="margin-top:12px">Sustainable upgrades feel expensive, complicated, and opaque. People can't visualize the outcome, can't estimate the cost, don't know which of the dozens of Swiss subsidy schemes apply, and have no idea who to hire first. So they default to doing nothing — or a cheap, non-green patch-up.</p>
+          </div>
+          <div class="card">
+            <span class="lbl">For the ecosystem</span>
+            <p style="margin-top:12px">Banks, architects, and builders meet clients who arrive with vague wishes and no documentation, forcing slow, expensive discovery cycles. A buyer who shows up with a costed, energy-modelled, subsidy-aware brief is a dramatically better lead.</p>
+          </div>
+        </div>
+        <div class="callout">
+          <span class="lbl">Our bet</span>
+          <p>If we make the <em>financial and carbon consequences</em> of a renovation visible and playful — and turn the result into a real handoff document — people will invest in sustainable housing far more often, and far more confidently.</p>
+        </div>
+      </section>
+
+      <!-- 3. USERS -->
+      <section class="sec" id="users">
+        <div class="sec-head"><div class="sec-num">03</div><h2>Who it's for</h2></div>
+        <p class="sec-intro">One product, three overlapping mindsets. We design for the first-time buyer first, but every persona shares the same core loop.</p>
+        <div class="grid g3">
+          <div class="card persona">
+            <div class="avatar">LM</div>
+            <div><h4>The First-Time Buyers</h4><div class="who">Lena &amp; Marco · 32 &amp; 35 · Zürich-Wiedikon</div></div>
+            <p>Eco-curious dual-income couple eyeing their first apartment. Excited but intimidated by cost and process. Don't know what's possible or what they can afford.</p>
+            <p class="quote">"Could we actually afford to make it nice and green — or is that just for rich people?"</p>
+          </div>
+          <div class="card persona">
+            <div class="avatar">HK</div>
+            <div><h4>The Renovating Owner</h4><div class="who">Hans · 58 · Winterthur</div></div>
+            <p>Owns a 1980s single-family house with an aging oil heater. Wants lower bills and to "do the right thing," and has heard the state pays for some of it.</p>
+            <p class="quote">"I want the oil gone. Tell me what it costs after the subsidies."</p>
+          </div>
+          <div class="card persona">
+            <div class="avatar">SR</div>
+            <div><h4>The Investor</h4><div class="who">Sofia · 44 · Zug</div></div>
+            <p>Buys to renovate and hold or sell. Thinks in ROI, value uplift, and increasingly in ESG / energy-rating risk for resale.</p>
+            <p class="quote">"What does a B-rating do to the resale value versus what it costs me?"</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. PRINCIPLES -->
+      <section class="sec" id="principles">
+        <div class="sec-head"><div class="sec-num">04</div><h2>Design principles</h2></div>
+        <p class="sec-intro">Five commitments that should resolve every design argument we'll have.</p>
+        <div class="principles">
+          <div class="principle"><div class="pn"></div><div><h4>Numbers you can trust, in real time</h4><p>Every choice updates cost, energy, and financing instantly and transparently. We always show our assumptions; we never hide behind a "request a quote" wall.</p></div></div>
+          <div class="principle"><div class="pn"></div><div><h4>Sustainability is a lens, not a lecture</h4><p>Eco impact sits shoulder-to-shoulder with cost and beauty — never preaching, always quantified. Green is the smart default, shown through outcomes, not slogans.</p></div></div>
+          <div class="principle"><div class="pn"></div><div><h4>From daydream to dossier</h4><p>Play is the entry point; a buildable plan is the exit. Nothing the user does is throwaway — every interaction quietly assembles a real document.</p></div></div>
+          <div class="principle"><div class="pn"></div><div><h4>Swiss precision, premium calm</h4><p>Dark, quiet, data-forward. The interface should feel like a precision instrument — closer to an energy <em>certificate</em> than a real-estate listing app.</p></div></div>
+          <div class="principle"><div class="pn"></div><div><h4>The plan is a handoff</h4><p>The product's job ends by connecting the user to humans who build. We optimize for producing the cleanest possible brief for a bank, architect, or contractor.</p></div></div>
+        </div>
+      </section>
+
+      <!-- 5. EXPERIENCE -->
+      <section class="sec" id="experience">
+        <div class="sec-head"><div class="sec-num">05</div><h2>The experience, in three acts</h2></div>
+        <p class="sec-intro">A single narrative arc. Act II — Reimagine — is the heart, and where most design energy goes. Acts I and III are deliberately lighter rails that feed into and out of it.</p>
+        <div class="acts">
+          <div class="act">
+            <div class="stage">Act I · <b>Discover</b></div>
+            <h4>Find the place</h4>
+            <p>Enter a zipcode (e.g. <span class="num">8003</span>). Browse a map of plausible Zürich listings with price, size, year, and current energy rating. Pick one to reimagine — or start from "my own home."</p>
+            <span class="tag">Lightweight rail</span>
+          </div>
+          <div class="act heart">
+            <div class="stage">Act II · <b>Reimagine</b></div>
+            <h4>Make it yours</h4>
+            <p>Open the floor plan. Move walls, swap finishes, add Minergie-grade systems. A live ledger shows cost, energy rating, CO₂, subsidies, and mortgage impact reacting to every move.</p>
+            <span class="tag">★ The heart</span>
+          </div>
+          <div class="act">
+            <div class="stage">Act III · <b>Connect</b></div>
+            <h4>Make it real</h4>
+            <p>Your vision becomes a dossier. Get matched with banks for financing, architects for design, and builders for delivery — each one able to read the exact plan you built.</p>
+            <span class="tag">The payoff</span>
+          </div>
+        </div>
+        <div class="callout">
+          <span class="lbl">Flow at a glance</span>
+          <p><b>Zipcode → Listing → Floor plan → Configure (cost · energy · finance live) → Plan summary → Dossier → Matched professionals.</b> A user can stop after Act II with a saved vision, or push through to a real conversation in Act III.</p>
+        </div>
+      </section>
+
+      <!-- 6. CONFIGURATOR -->
+      <section class="sec" id="configurator">
+        <div class="sec-head"><div class="sec-num">06</div><h2>The Reimagine configurator</h2></div>
+        <p class="sec-intro">This is the product. A two-pane workspace: an interactive floor plan on the left, a living impact ledger on the right. Everything else exists to get the user here and to capture what they make.</p>
+
+        <h3>The canvas (left)</h3>
+        <p>An editable plan of the chosen property. Per the brief, this is a <strong>full configurator</strong>, not just an annotation tool. Interactions, in rough order of ambition:</p>
+        <div class="chips">
+          <div class="chip"><b>Select</b> a room to inspect it</div>
+          <div class="chip"><b>Swap</b> finishes &amp; materials</div>
+          <div class="chip"><b>Move / remove</b> interior walls</div>
+          <div class="chip"><b>Add</b> rooms &amp; openings</div>
+          <div class="chip"><b>Place</b> systems (heat pump, PV, MVHR)</div>
+          <div class="chip"><b>Toggle</b> before / after</div>
+        </div>
+
+        <div class="placeholder">
+          <div class="cap"><b>SCREEN PLACEHOLDER — Configurator canvas</b>Interactive 2D floor plan. Selectable rooms &amp; walls, drag handles, a material/system palette docked left, before/after toggle top-right. We'll design this screen in the prototype phase.</div>
+        </div>
+
+        <h3>The catalog</h3>
+        <p>A curated palette of upgrades, each one a card that carries its full consequence. Selecting it animates the ledger. Indicative categories:</p>
+        <table class="tbl">
+          <thead><tr><th>Upgrade</th><th>What it does</th><th>Cost (indic.)</th><th>Energy / CO₂ effect</th></tr></thead>
+          <tbody>
+            <tr><td><b>Air-source heat pump</b><div class="sub">replaces oil / gas boiler</div></td><td>Electrifies heating &amp; hot water</td><td class="delta-cost">CHF 30–45k</td><td><span class="delta-good">−60% heating CO₂</span></td></tr>
+            <tr><td><b>Triple-glazed windows</b><div class="sub">whole-home</div></td><td>Cuts heat loss, kills draughts</td><td class="delta-cost">CHF 25–60k</td><td><span class="delta-good">−15 kWh/m²·yr</span></td></tr>
+            <tr><td><b>Façade insulation</b><div class="sub">external / internal</div></td><td>The single biggest envelope win</td><td class="delta-cost">CHF 40–90k</td><td><span class="delta-good">−25 kWh/m²·yr</span></td></tr>
+            <tr><td><b>Rooftop solar PV</b><div class="sub">+ optional battery</div></td><td>On-site generation</td><td class="delta-cost">CHF 18–35k</td><td><span class="delta-good">−2–4 t CO₂/yr</span></td></tr>
+            <tr><td><b>MVHR ventilation</b><div class="sub">heat-recovery</div></td><td>Fresh air without the heat bill</td><td class="delta-cost">CHF 15–28k</td><td><span class="delta-good">Minergie req.</span></td></tr>
+            <tr><td><b>Low-carbon finishes</b><div class="sub">timber, clay, lime, cork</div></td><td>Aesthetics + embodied carbon</td><td class="delta-cost">varies</td><td><span class="delta-good">−embodied CO₂</span></td></tr>
+          </tbody>
+        </table>
+        <p class="note">All figures are indicative placeholders to communicate the model. Real ranges will be sourced from Swiss cost databases and refined with a partner before launch.</p>
+
+        <h3>The live ledger (right)</h3>
+        <p>The emotional core. A persistent panel that recalculates on every change. A mock of its resting state:</p>
+        <div class="livepanel">
+          <div class="lp-head"><span>Impact ledger — live</span><span class="dot">● recalculating</span></div>
+          <div class="lp-row"><div class="k">Energy rating (GEAK)</div><div class="v">E → B</div><div class="d up">▲ 3 grades</div></div>
+          <div class="lp-row"><div class="k">Energy use</div><div class="v">142 → 58 kWh/m²·yr</div><div class="d down">▼ 59%</div></div>
+          <div class="lp-row"><div class="k">CO₂ emissions</div><div class="v">5.1 → 1.2 t/yr</div><div class="d down">▼ 76%</div></div>
+          <div class="lp-row"><div class="k">Renovation cost</div><div class="v">CHF 184'000</div><div class="d"></div></div>
+          <div class="lp-row"><div class="k">Eligible subsidies</div><div class="v">− CHF 38'500</div><div class="d up">claimable</div></div>
+          <div class="lp-row"><div class="k">Est. value uplift</div><div class="v">+ CHF 145'000</div><div class="d up">▲</div></div>
+          <div class="lp-total"><div class="k">Net monthly impact</div><div class="v">+ CHF 410 / mo</div></div>
+        </div>
+        <p class="note" style="margin-top:14px">"Net monthly impact" folds the financed renovation cost (less subsidies) into the existing mortgage and nets off projected energy savings — the single number that answers <em>"can I actually do this?"</em></p>
+      </section>
+
+      <!-- 7. FINANCE -->
+      <section class="sec" id="finance">
+        <div class="sec-head"><div class="sec-num">07</div><h2>Money: financing &amp; subsidies</h2></div>
+        <p class="sec-intro">The differentiator you named: making financial impact legible, and turning it into a route to actually buying or building. Three engines feed the ledger.</p>
+
+        <h3>1 · Mortgage &amp; affordability estimate</h3>
+        <p>A simplified model of Swiss residential lending, transparent about its assumptions.</p>
+        <dl class="spec">
+          <div><dt>Down payment</dt><dd><b>Min. 20%</b> of purchase price; at least 10% from "hard" equity (not pension capital).</dd></div>
+          <div><dt>Affordability rule</dt><dd>Imputed costs (≈<b>5% interest</b> + maintenance + amortization) should stay under <b>one-third of gross income</b>.</dd></div>
+          <div><dt>Renovation financing</dt><dd>Value-adding green upgrades can often be folded into the mortgage; we model the new payment.</dd></div>
+          <div><dt>Green mortgage rates</dt><dd>Several Swiss banks offer rate discounts for high energy ratings — we surface these as a lever.</dd></div>
+        </dl>
+
+        <h3>2 · Renovation cost breakdown</h3>
+        <p>The sum of selected upgrades, grouped by trade (envelope, systems, finishes, soft costs), with low/expected/high ranges so users see uncertainty honestly rather than a false-precision single figure.</p>
+
+        <h3>3 · Subsidies &amp; cantonal grants</h3>
+        <p>Switzerland's real, and genuinely generous, support landscape — mapped automatically to the user's selections and canton.</p>
+        <table class="tbl">
+          <thead><tr><th>Programme</th><th>Covers</th><th>Level</th></tr></thead>
+          <tbody>
+            <tr><td><b>Das Gebäudeprogramm</b><div class="sub">The Buildings Programme</div></td><td>Insulation, envelope, heating replacement, whole-building refurbishment</td><td>Federal + cantonal</td></tr>
+            <tr><td><b>Cantonal Förderprogramme</b><div class="sub">e.g. Kanton Zürich</div></td><td>Heat-pump &amp; oil/gas replacement bonuses, varies by canton</td><td>Cantonal</td></tr>
+            <tr><td><b>Pronovo — EIV</b><div class="sub">one-time PV remuneration</div></td><td>Rooftop solar installations</td><td>Federal</td></tr>
+            <tr><td><b>GEAK Plus advisory grant</b><div class="sub">energy certificate + report</div></td><td>Subsidized energy audit &amp; renovation roadmap</td><td>Cantonal</td></tr>
+            <tr><td><b>Minergie certification</b><div class="sub">standard, not a subsidy</div></td><td>Unlocks lower rates, higher value, some local bonuses</td><td>Standard / label</td></tr>
+          </tbody>
+        </table>
+        <p class="note">Programmes and eligibility shown are real but summarized; exact amounts and rules change yearly and by canton. The prototype will use indicative figures; production needs a maintained rules engine (ideally a data partnership).</p>
+      </section>
+
+      <!-- 8. SUSTAINABILITY -->
+      <section class="sec" id="sustainability">
+        <div class="sec-head"><div class="sec-num">08</div><h2>The sustainability layer</h2></div>
+        <p class="sec-intro">Balanced framing: always present, never preachy. We lean on Switzerland's own established yardsticks rather than inventing our own green score.</p>
+
+        <h3>GEAK energy rating — the spine</h3>
+        <p>We use the <strong>GEAK</strong> scale (the cantonal building energy certificate, A best → G worst) as the headline metric. Every plan shows its before and after rating, the way an appliance shows its energy label.</p>
+        <div class="geak">
+          <div class="step a"><span class="pin">after ▾</span>A</div>
+          <div class="step b">B</div>
+          <div class="step c">C</div>
+          <div class="step d">D</div>
+          <div class="step e"><span class="pin">before ▾</span>E</div>
+          <div class="step f">F</div>
+          <div class="step g">G</div>
+        </div>
+
+        <h3>Minergie tiers — the aspiration</h3>
+        <p>We map a plan's progress toward the recognized Swiss standards, so a user can deliberately aim for one as a goal.</p>
+        <div class="grid g3">
+          <div class="card"><span class="lbl">Tier 01</span><h4 style="margin:8px 0 4px">Minergie</h4><p class="note" style="margin:0">Low energy demand, comfort &amp; quality baseline.</p></div>
+          <div class="card"><span class="lbl">Tier 02</span><h4 style="margin:8px 0 4px">Minergie-P</h4><p class="note" style="margin:0">Passive-house-grade ultra-low demand.</p></div>
+          <div class="card"><span class="lbl">Tier 03</span><h4 style="margin:8px 0 4px">Minergie-A</h4><p class="note" style="margin:0">Net-zero in operation; self-supplying.</p></div>
+        </div>
+
+        <h3>The three numbers we always show</h3>
+        <div class="chips">
+          <div class="chip"><b>Operational energy</b> — kWh/m²·yr</div>
+          <div class="chip"><b>CO₂ emissions</b> — t/yr, operational + embodied</div>
+          <div class="chip"><b>Comfort</b> — qualitative (draught-free, fresh air, quiet)</div>
+        </div>
+      </section>
+
+      <!-- 9. CONNECT -->
+      <section class="sec" id="connect">
+        <div class="sec-head"><div class="sec-num">09</div><h2>From vision to build</h2></div>
+        <p class="sec-intro">The other half of your differentiator — making a vision <em>manageable</em>. The configurator's output isn't a pretty picture; it's a working brief, and a set of warm introductions.</p>
+
+        <h3>The dossier</h3>
+        <p>One generated document per plan, structured so a professional can act on it immediately: the property, the before/after floor plan, the upgrade schedule, the cost breakdown with ranges, the energy model, the applicable subsidies, and the financing assumptions. Exportable as PDF and shareable by link.</p>
+
+        <h3>The matchmaking</h3>
+        <p>From the dossier, the user is routed to the right humans for their stage — each one receiving the dossier as context.</p>
+        <div class="grid g2">
+          <div class="card"><span class="lbl">→ Banks &amp; financing</span><p style="margin-top:10px">Mortgage advisors and green-mortgage products matched to the user's affordability profile and target rating.</p></div>
+          <div class="card"><span class="lbl">→ Architects &amp; designers</span><p style="margin-top:10px">Local practices filtered by Minergie experience and the scope of the plan.</p></div>
+          <div class="card"><span class="lbl">→ Builders &amp; trades</span><p style="margin-top:10px">Vetted contractors and certified installers for heat pumps, PV, and envelope work.</p></div>
+          <div class="card"><span class="lbl">→ Energy advisors</span><p style="margin-top:10px">GEAK-certified experts to formalize the audit and unlock the advisory subsidies.</p></div>
+        </div>
+        <div class="callout">
+          <span class="lbl">The "manageable process" promise</span>
+          <p>The dossier doubles as a <b>phased roadmap</b>: what to do first, what it unlocks, which subsidy deadlines matter, and which professional to engage at each step. The vision arrives at the builder already sequenced.</p>
+        </div>
+      </section>
+
+      <!-- 10. IA -->
+      <section class="sec" id="ia">
+        <div class="sec-head"><div class="sec-num">10</div><h2>Architecture &amp; data</h2></div>
+        <p class="sec-intro">A first cut of the structure — to be refined as we prototype.</p>
+
+        <h3>Sitemap</h3>
+        <div class="card">
+          <div class="tree">
+<span class="root">SUSTAINABLE SWISS HOME</span><br>
+<span class="br">├─</span> <b>Discover</b> — zipcode search · map · listings · listing detail<br>
+<span class="br">├─</span> <b>Reimagine</b> <span style="color:var(--acc)">★</span> — floor-plan canvas · upgrade catalog · live ledger · before/after<br>
+<span class="br">├─</span> <b>Plan summary</b> — cost breakdown · energy model · subsidy finder · financing<br>
+<span class="br">├─</span> <b>Dossier</b> — generated brief · PDF / share · phased roadmap<br>
+<span class="br">├─</span> <b>Connect</b> — bank · architect · builder · energy-advisor matching<br>
+<span class="br">└─</span> <b>My projects</b> — saved visions · compare · revisit
+          </div>
+        </div>
+
+        <h3>Core entities</h3>
+        <dl class="spec">
+          <div><dt>Property</dt><dd>Address, zip, type, year, m², purchase price, current GEAK rating, geo-point.</dd></div>
+          <div><dt>FloorPlan</dt><dd>Rooms, walls, openings, total area — editable geometry tied to a Property.</dd></div>
+          <div><dt>Upgrade</dt><dd>Category, cost range, energy delta, CO₂ delta, Minergie contribution, linked subsidies.</dd></div>
+          <div><dt>Plan</dt><dd>A user's set of selected Upgrades + edited FloorPlan = the costed, modelled vision.</dd></div>
+          <div><dt>Subsidy</dt><dd>Programme, canton scope, eligibility rules, amount/formula, deadline.</dd></div>
+          <div><dt>FinancialProfile</dt><dd>Income, equity, existing financing — drives affordability &amp; mortgage delta.</dd></div>
+          <div><dt>Professional</dt><dd>Type, location, certifications, specialties — the matchmaking pool.</dd></div>
+        </dl>
+      </section>
+
+      <!-- 11. SCOPE -->
+      <section class="sec" id="scope">
+        <div class="sec-head"><div class="sec-num">11</div><h2>Scope &amp; the prototype</h2></div>
+        <p class="sec-intro">What we build together next, and what waits. The prototype proves the loop — the Reimagine configurator with a live ledger — using realistic mock Zürich data.</p>
+        <div class="phases">
+          <div class="phase">
+            <div class="pbadge"><span class="n">P1</span><span class="t">Prototype</span></div>
+            <div>
+              <ul>
+                <li><b>Lightweight Discover:</b> zipcode entry, a small map with 4–6 mock Zürich listings, pick one.</li>
+                <li><b>The full Reimagine workspace:</b> editable floor plan, upgrade catalog, and the live impact ledger — the heart.</li>
+                <li><b>Live cost + energy + finance</b> recalculating on every change, with visible assumptions.</li>
+                <li><b>Plan summary + dossier preview</b> and a static "connect" directory.</li>
+              </ul>
+              <span class="mvp-flag">★ Build this first</span>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="pbadge"><span class="n">P2</span><span class="t">Depth</span></div>
+            <div><ul>
+              <li>Real subsidy rules engine (canton-aware) and refined cost data.</li>
+              <li>Richer floor-plan editing: add/move rooms, structural hints.</li>
+              <li>Accounts, saved projects, side-by-side plan comparison.</li>
+            </ul></div>
+          </div>
+          <div class="phase">
+            <div class="pbadge"><span class="n">P3</span><span class="t">Ecosystem</span></div>
+            <div><ul>
+              <li>Live professional marketplace with real partners &amp; lead handoff.</li>
+              <li>Bank integrations for genuine pre-qualification.</li>
+              <li>Expansion beyond Zürich to all Swiss cantons.</li>
+            </ul></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 12. QUESTIONS -->
+      <section class="sec" id="questions">
+        <div class="sec-head"><div class="sec-num">12</div><h2>Open questions</h2></div>
+        <p class="sec-intro">Decisions worth making before — or as — we build the prototype.</p>
+        <ul class="q">
+          <li><p>How much floor-plan editing is "enough" for the prototype to feel magical without becoming a CAD tool?<span class="why">Suggest: select + swap + place systems first; defer wall-moving to P2.</span></p></li>
+          <li><p>Do we start from a real listing or from "my own home" — which entry point do we lead with?</p></li>
+          <li><p>How precise must the live numbers be to feel trustworthy yet not falsely exact? Where do we show ranges vs. single figures?</p></li>
+          <li><p>Is the dossier the product's true output (a lead-gen brief), or is the in-app exploration the point?<span class="why">This shapes the whole business model.</span></p></li>
+          <li><p>Do we want a short product handle for nav &amp; URLs (e.g. <b>SSH</b> / <b>swisshome</b>), or always spell out the full name?<span class="why">Affects logo lockup, favicon, and the in-app header.</span></p></li>
+          <li><p>Which canton(s) for v1 data — Zürich only, or Zürich + a contrast canton to prove the subsidy engine generalizes?</p></li>
+        </ul>
+
+        <div class="foot">
+          <div><b>Sustainable Swiss Home</b> · Product Specification · v0.1 draft</div>
+          <div>Next: build the <b>Reimagine</b> prototype together →</div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// scrollspy for the TOC
+(function(){
+  var links = [].slice.call(document.querySelectorAll('nav.toc a'));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var secs = [].slice.call(document.querySelectorAll('section.sec, header.hero'));
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(l){ l.classList.remove('active'); });
+        var id = e.target.id;
+        if(map[id]) map[id].classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+  secs.forEach(function(s){ obs.observe(s); });
+})();
+</script>
+</body>
+</html>
