@@ -56,6 +56,7 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
   const roRef = React.useRef<any>(null);
   const [ready, setReady] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
+  const [dbg, setDbg] = React.useState("mounting…"); // TEMP diagnostic
   const onSelectRef = React.useRef(onSelect);
   onSelectRef.current = onSelect;
   const onPickRef = React.useRef(onPick);
@@ -67,9 +68,16 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
     let map: any;
     (async () => {
       try {
-        const maplibregl = (await import("maplibre-gl")).default;
-        if (cancelled || !containerRef.current) return;
+        setDbg("importing maplibre…");
+        const mod = await import("maplibre-gl");
+        const maplibregl = mod.default ?? (mod as any);
+        if (cancelled || !containerRef.current) {
+          setDbg(`early-return container=${!!containerRef.current} cancelled=${cancelled}`);
+          return;
+        }
         libRef.current = maplibregl;
+        const c0 = containerRef.current;
+        setDbg(`imported=${typeof maplibregl} Map=${typeof maplibregl?.Map} box=${c0.clientWidth}x${c0.clientHeight}`);
         map = new maplibregl.Map({
           container: containerRef.current,
           style: BASE_STYLE as any,
@@ -96,15 +104,22 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
         // Markers are DOM overlays projected from lng/lat — they don't need tiles
         // to be loaded, so flag ready as soon as the map style is parsed. Using
         // the style.load event (fires even when tiles fail) keeps pins reliable.
+        const flagReady = () => {
+          if (cancelled) return;
+          setReady(true);
+          const cc = containerRef.current;
+          setDbg(`ready box=${cc?.clientWidth}x${cc?.clientHeight} canvas=${!!map.getCanvas?.()}`);
+        };
         if (map.isStyleLoaded()) {
-          if (!cancelled) setReady(true);
+          flagReady();
         } else {
-          map.once("styledata", () => {
-            if (!cancelled) setReady(true);
-          });
+          map.once("styledata", flagReady);
         }
-      } catch {
-        if (!cancelled) setFailed(true); // WebGL unavailable — degrade gracefully
+      } catch (e: any) {
+        if (!cancelled) {
+          setFailed(true); // WebGL unavailable — degrade gracefully
+          setDbg(`THROW: ${e?.message ?? String(e)}`);
+        }
       }
     })();
     return () => {
@@ -221,6 +236,24 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
           Map unavailable in this browser — use the property list on the right.
         </div>
       )}
+      {/* TEMP diagnostic — remove once map confirmed */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 8,
+          left: 8,
+          zIndex: 9999,
+          background: "rgba(10,12,16,0.88)",
+          color: "#7CFC9A",
+          font: "11px/1.4 ui-monospace,monospace",
+          padding: "6px 9px",
+          borderRadius: 7,
+          maxWidth: "92%",
+          pointerEvents: "none",
+        }}
+      >
+        MAP DIAG · ready={String(ready)} · {dbg}
+      </div>
     </div>
   );
 }
