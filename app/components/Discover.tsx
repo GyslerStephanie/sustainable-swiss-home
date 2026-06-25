@@ -130,6 +130,14 @@ export function Discover({
                 <p className="lc-blurb">{l.blurb}</p>
                 <div className="lc-foot">
                   <GeakChip grade={geak.of(l.baseEnergy)} label={"heute · " + l.heating} />
+                  {l.solar && (
+                    <span
+                      className="solar-chip"
+                      title={`Suitable roof area ≈ ${l.solar.areaM2} m² · sonnendach suitability ${l.solar.klasse}/5`}
+                    >
+                      ☀ {l.solar.kwhYr.toLocaleString("de-CH")} kWh/yr roof solar
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

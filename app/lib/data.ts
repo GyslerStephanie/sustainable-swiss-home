@@ -44,6 +44,16 @@ export interface Listing {
   heating: string;
   blurb: string;
   coords: { lat: number; lng: number }; // real WGS84 location for the map
+  footprint?: [number, number][]; // real building outline (WGS84 [lng,lat] ring) — GWR/cadastre
+  solar?: SolarPotential; // rooftop solar potential — swisstopo sonnendach
+}
+
+/** Rooftop solar potential from swisstopo's solar cadastre (sonnendach.ch),
+    summed over a building's roof surfaces by EGID. */
+export interface SolarPotential {
+  kwhYr: number; // annual PV electricity potential (kWh/yr)
+  areaM2: number; // suitable roof area (m²)
+  klasse: number; // best suitability class on the roof (1 poor … 5 excellent)
 }
 
 export interface Upgrade {

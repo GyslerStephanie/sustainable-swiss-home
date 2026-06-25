@@ -28,6 +28,8 @@ export async function GET(req: Request) {
       area: b.area,
       heating: b.heating,
       coords: b.coords,
+      footprint: b.footprint,
+      solar: b.solar,
     });
     return NextResponse.json({ source: "gwr", egid: b.egid, listing });
   } catch (e) {

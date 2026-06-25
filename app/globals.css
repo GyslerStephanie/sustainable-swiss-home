@@ -484,6 +484,19 @@ a.partner:hover { opacity: 0.62; }
 a.partner .pn { color: var(--acc-2); }
 a.partner .pm { white-space: normal; }
 
+/* rooftop solar (sonnendach) */
+.solar-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  background: #fbf0d4; color: #8a6a14; border: 1px solid #f0dca5; white-space: nowrap;
+}
+.solar-note {
+  margin: 0 0 22px; padding: 13px 16px; border-radius: 12px;
+  background: #fbf3dd; border: 1px solid #efdca8; color: #6f560f;
+  font-size: 13.5px; line-height: 1.5;
+}
+.solar-note b { color: #5a4609; }
+
 /* subsidy apply links + timing tags */
 .apply-link { color: var(--acc-2); font-weight: 600; text-decoration: none; white-space: nowrap; }
 .apply-link:hover { text-decoration: underline; }

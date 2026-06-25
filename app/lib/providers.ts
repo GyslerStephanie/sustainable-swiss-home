@@ -17,7 +17,7 @@
    - Valuation   → PriceHubble / IAZI / RealAdvisor for price
      estimates where a listing price is absent.
    ============================================================ */
-import { listings as seedListings, type Listing } from "./data";
+import { listings as seedListings, type Listing, type SolarPotential } from "./data";
 import { typicalDemand } from "./engine";
 
 export interface ListingQuery {
@@ -65,6 +65,8 @@ export function buildingFromGwr(record: {
   area: number;
   heating: string; // GWR genh1 code mapped to a label upstream
   coords: { lat: number; lng: number }; // from GWR GKODE/GKODN (LV95 → WGS84)
+  footprint?: [number, number][]; // building outline (WGS84 ring)
+  solar?: SolarPotential; // sonnendach rooftop solar potential
   price?: number;
   measuredEnergy?: number; // kWh/m²·yr if known
 }): Listing {
@@ -82,6 +84,8 @@ export function buildingFromGwr(record: {
     heating: record.heating,
     blurb: "",
     coords: record.coords, // GWR supplies GKODE/GKODN → WGS84
+    footprint: record.footprint,
+    solar: record.solar,
   };
 }
 

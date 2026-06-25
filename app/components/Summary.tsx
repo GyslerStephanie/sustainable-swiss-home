@@ -138,6 +138,16 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
             </div>
           </div>
 
+          {/* Rooftop solar potential — real data from swisstopo sonnendach */}
+          {listing.solar && (
+            <div className="solar-note">
+              ☀ <b>Rooftop solar potential:</b> ~{listing.solar.kwhYr.toLocaleString("de-CH")} kWh/yr across ~
+              {listing.solar.areaM2} m² of suitable roof
+              {listing.solar.klasse ? ` (sonnendach suitability ${listing.solar.klasse}/5)` : ""}. That is the official
+              ceiling for on-site PV at this address — swisstopo solar cadastre.
+            </div>
+          )}
+
           {/* Cost breakdown */}
           <div className="doc-sec">
             <h2>Cost breakdown</h2>

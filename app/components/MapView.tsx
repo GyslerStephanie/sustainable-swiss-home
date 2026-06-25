@@ -107,6 +107,36 @@ export function MapView({ listings, selectedId, onSelect }: MapViewProps) {
       markersRef.current[l.id] = { marker, el };
     }
 
+    // real building footprints (GWR/cadastre) — fill + outline overlay
+    const fc = {
+      type: "FeatureCollection",
+      features: listings
+        .filter((l) => l.footprint && l.footprint.length >= 3)
+        .map((l) => ({
+          type: "Feature" as const,
+          properties: { id: l.id },
+          geometry: { type: "Polygon" as const, coordinates: [l.footprint] },
+        })),
+    };
+    const src = map.getSource("footprints");
+    if (src) {
+      src.setData(fc);
+    } else {
+      map.addSource("footprints", { type: "geojson", data: fc });
+      map.addLayer({
+        id: "fp-fill",
+        type: "fill",
+        source: "footprints",
+        paint: { "fill-color": "#2f7d5b", "fill-opacity": 0.22 },
+      });
+      map.addLayer({
+        id: "fp-line",
+        type: "line",
+        source: "footprints",
+        paint: { "line-color": "#2f7d5b", "line-width": 2 },
+      });
+    }
+
     if (listings.length > 0) {
       const lons = listings.map((l) => l.coords.lng);
       const lats = listings.map((l) => l.coords.lat);
@@ -128,7 +158,20 @@ export function MapView({ listings, selectedId, onSelect }: MapViewProps) {
     }
     const sel = listings.find((l) => l.id === selectedId);
     if (sel && mapRef.current) {
-      mapRef.current.easeTo({ center: [sel.coords.lng, sel.coords.lat], duration: 500 });
+      if (sel.footprint && sel.footprint.length >= 3) {
+        // zoom tight to the real building outline
+        const lons = sel.footprint.map((p) => p[0]);
+        const lats = sel.footprint.map((p) => p[1]);
+        mapRef.current.fitBounds(
+          [
+            [Math.min(...lons), Math.min(...lats)],
+            [Math.max(...lons), Math.max(...lats)],
+          ],
+          { padding: 120, maxZoom: 19, duration: 600 }
+        );
+      } else {
+        mapRef.current.easeTo({ center: [sel.coords.lng, sel.coords.lat], duration: 500 });
+      }
     }
   }, [selectedId, listings]);
 
