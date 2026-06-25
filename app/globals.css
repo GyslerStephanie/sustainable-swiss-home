@@ -267,7 +267,7 @@ button { font-family: inherit; cursor: pointer; }
 .up-card .uc-title { flex: 1; }
 .up-card .uc-title .n { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
 .up-card .uc-title .de { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
-.up-card .uc-desc { font-size: 12.5px; color: var(--muted); margin: 8px 0 10px; }
+.up-card .uc-desc { font-size: 13px; color: var(--muted); margin: 8px 0 10px; line-height: 1.45; }
 .up-card .uc-stats { display: flex; flex-wrap: wrap; gap: 6px; }
 .stat {
   font-family: var(--mono); font-size: 10.5px; padding: 3px 8px; border-radius: 100px;
@@ -368,7 +368,7 @@ button { font-family: inherit; cursor: pointer; }
   font-family: var(--mono); font-size: 11px; padding: 8px 12px; border-radius: 10px;
   background: var(--green-soft); color: var(--green-2); font-weight: 700;
 }
-.minergie-chip.none { background: var(--bg-4); color: var(--faint); }
+.minergie-chip.none { background: var(--bg-4); color: var(--muted); }
 .minergie-chip .star { font-size: 13px; }
 
 /* metric rows */
@@ -400,7 +400,7 @@ button { font-family: inherit; cursor: pointer; }
 
 .ledger-foot { padding: 14px 18px; border-top: 1px solid var(--line); }
 .ledger-foot .btn { width: 100%; justify-content: center; }
-.assump { font-size: 10.5px; color: var(--faint); margin: 10px 2px 0; font-family: var(--mono); line-height: 1.5; }
+.assump { font-size: 11.5px; color: var(--muted); margin: 10px 2px 0; font-family: var(--mono); line-height: 1.55; }
 
 .empty-ledger { text-align: center; padding: 30px 16px; color: var(--faint); }
 .empty-ledger .ic { font-size: 26px; margin-bottom: 8px; opacity: 0.6; }
