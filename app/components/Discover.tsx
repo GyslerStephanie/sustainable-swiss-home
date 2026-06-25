@@ -37,21 +37,28 @@ export function Discover({
   const [status, setStatus] = React.useState<"idle" | "loading" | "error">("idle");
   const [errMsg, setErrMsg] = React.useState("");
 
-  async function lookup() {
-    const q = addr.trim();
-    if (!q || status === "loading") return;
+  async function runLookup(query: string, notFound: string) {
+    if (status === "loading") return;
     setStatus("loading");
     setErrMsg("");
     try {
-      const res = await fetch(`/api/building?address=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/building?${query}`);
       const data = await res.json();
-      if (!res.ok || !data.listing) throw new Error(data.error || "No building found");
+      if (!res.ok || !data.listing) throw new Error(data.error || notFound);
       onExternalListing(data.listing as Listing);
       setStatus("idle");
     } catch (e) {
       setStatus("error");
       setErrMsg(e instanceof Error ? e.message : "Lookup failed");
     }
+  }
+  function lookup() {
+    const q = addr.trim();
+    if (!q) return;
+    runLookup(`address=${encodeURIComponent(q)}`, "No building found");
+  }
+  function pickBuilding(lng: number, lat: number) {
+    runLookup(`lat=${lat}&lng=${lng}`, "No building at that spot — try clicking a roof");
   }
 
   return (
@@ -62,16 +69,16 @@ export function Discover({
         <Steps current="discover" />
         <div className="spacer"></div>
         <span className="mono" style={{ fontSize: 11, color: "var(--faint)" }}>
-          Seed Zürich data · swisstopo basemap
+          GWR · sonnendach · swisstopo basemap
         </span>
       </div>
 
       <div className="discover-body">
         {/* MAP */}
         <div className="map-wrap">
-          <MapView listings={matches} selectedId={selectedId} onSelect={onSelect} />
+          <MapView listings={matches} selectedId={selectedId} onSelect={onSelect} onPick={pickBuilding} />
           <div className="map-overlay-label">
-            Zürich · {matches.length} {matches.length === 1 ? "property" : "properties"}
+            {status === "loading" ? "Looking up building…" : "Click any building in Switzerland to reimagine it"}
           </div>
         </div>
 
@@ -95,7 +102,7 @@ export function Discover({
             </div>
 
             <div className="gwr-lookup">
-              <div className="gwr-label">Don&apos;t see your place? Look up any Zürich address</div>
+              <div className="gwr-label">Don&apos;t see your place? Look up any Swiss address — or click it on the map</div>
               <div className="gwr-row">
                 <input
                   value={addr}

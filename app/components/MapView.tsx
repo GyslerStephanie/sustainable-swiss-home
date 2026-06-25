@@ -12,12 +12,26 @@ interface MapViewProps {
   listings: Listing[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** click anywhere on the map → (lng, lat); enables "pick any building" mode */
+  onPick?: (lng: number, lat: number) => void;
 }
 
-// Free official Swiss basemap — grey pixel map, EPSG:3857, no token required.
-const SWISSTOPO_STYLE = {
+// Basemap: a reliable global fallback (Carto light) UNDER the official Swiss
+// map (swisstopo grey). swisstopo is opaque and covers Carto when it loads;
+// if its tiles ever fail, Carto still shows — so the map is never blank.
+const BASE_STYLE = {
   version: 8 as const,
   sources: {
+    carto: {
+      type: "raster" as const,
+      tiles: [
+        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      attribution: "© OpenStreetMap · © CARTO",
+    },
     swisstopo: {
       type: "raster" as const,
       tiles: [
@@ -27,11 +41,14 @@ const SWISSTOPO_STYLE = {
       attribution: "© swisstopo",
     },
   },
-  layers: [{ id: "swisstopo", type: "raster" as const, source: "swisstopo" }],
+  layers: [
+    { id: "carto", type: "raster" as const, source: "carto" },
+    { id: "swisstopo", type: "raster" as const, source: "swisstopo" },
+  ],
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function MapView({ listings, selectedId, onSelect }: MapViewProps) {
+export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const mapRef = React.useRef<any>(null);
   const libRef = React.useRef<any>(null);
@@ -40,6 +57,8 @@ export function MapView({ listings, selectedId, onSelect }: MapViewProps) {
   const [failed, setFailed] = React.useState(false);
   const onSelectRef = React.useRef(onSelect);
   onSelectRef.current = onSelect;
+  const onPickRef = React.useRef(onPick);
+  onPickRef.current = onPick;
 
   // 1. init map once (client-side only)
   React.useEffect(() => {
@@ -52,13 +71,18 @@ export function MapView({ listings, selectedId, onSelect }: MapViewProps) {
         libRef.current = maplibregl;
         map = new maplibregl.Map({
           container: containerRef.current,
-          style: SWISSTOPO_STYLE as any,
+          style: BASE_STYLE as any,
           center: [8.541, 47.376], // Zürich
           zoom: 11.5,
           attributionControl: { compact: true },
         });
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
         map.on("error", () => {}); // swallow tile errors; keep the app alive
+        // click-to-pick: identify whatever building was clicked (Discover only)
+        map.on("click", (e: any) => {
+          if (onPickRef.current) onPickRef.current(e.lngLat.lng, e.lngLat.lat);
+        });
+        if (onPickRef.current) map.getCanvas().style.cursor = "crosshair";
         mapRef.current = map;
         // Markers are DOM overlays projected from lng/lat — they don't need tiles
         // to be loaded, so flag ready as soon as the map style is parsed. Using

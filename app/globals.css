@@ -484,6 +484,13 @@ a.partner:hover { opacity: 0.62; }
 a.partner .pn { color: var(--acc-2); }
 a.partner .pm { white-space: normal; }
 
+/* embedded location map in the dossier */
+.dossier-map {
+  height: 320px; border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.dossier-map .map-pane { height: 100%; }
+
 /* rooftop solar (sonnendach) */
 .solar-chip {
   display: inline-flex; align-items: center; gap: 4px;

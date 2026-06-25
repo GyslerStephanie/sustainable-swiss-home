@@ -5,6 +5,7 @@ import { fmt, DIRECTORY, type Listing, type PlanState, type ComputedPlan } from 
 import { ASSUMPTIONS } from "@/app/lib/engine";
 import { encodeShare } from "@/app/lib/share";
 import { Brand, Steps, GeakBadge } from "./primitives";
+import { MapView } from "./MapView";
 
 interface SummaryProps {
   listing: Listing;
@@ -172,6 +173,18 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
               ceiling for on-site PV at this address — swisstopo solar cadastre.
             </div>
           )}
+
+          {/* Location */}
+          <div className="doc-sec">
+            <h2>Location</h2>
+            <div className="dossier-map">
+              <MapView listings={[listing]} selectedId={listing.id} onSelect={() => {}} />
+            </div>
+            <p style={{ fontSize: 12, color: "var(--faint)", fontFamily: "var(--mono)", marginTop: 8 }}>
+              {listing.zip} {listing.district}
+              {listing.footprint ? " · building outline from the federal cadastre" : ""}
+            </p>
+          </div>
 
           {/* Cost breakdown */}
           <div className="doc-sec">

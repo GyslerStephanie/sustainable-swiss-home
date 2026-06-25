@@ -149,11 +149,34 @@ export async function fetchSolar(egid: number): Promise<SolarRoof | null> {
   return { kwhYr: Math.round(kwhYr), areaM2: Math.round(areaM2), klasse };
 }
 
-/** Combine geocode + identify + solar into a normalized building record. */
-export async function fetchBuildingByAddress(address: string): Promise<GwrBuilding | null> {
-  const geo = await geocode(address);
-  if (!geo) return null;
-  const feat = await identifyBuilding(geo.x, geo.y);
+/* WGS84 → LV95, swisstopo's published approximate formulas (inverse of
+   lv95ToWgs84). Lets us identify the GWR building under a clicked map point. */
+function wgs84ToLv95(lat: number, lng: number): { x: number; y: number } {
+  const phi = (lat * 3600 - 169028.66) / 10000; // latitude, in 10⁴″ units
+  const lam = (lng * 3600 - 26782.5) / 10000; // longitude
+  const E =
+    2600072.37 +
+    211455.93 * lam -
+    10938.51 * lam * phi -
+    0.36 * lam * phi * phi -
+    44.54 * lam * lam * lam;
+  const N =
+    1200147.07 +
+    308807.95 * phi +
+    3745.25 * lam * lam +
+    76.63 * phi * phi -
+    194.56 * lam * lam * phi +
+    119.79 * phi * phi * phi;
+  return { x: E, y: N };
+}
+
+/* Normalize an identify feature (+ a coordinate + a display label) into a
+   building record. Shared by the address and map-click lookups. */
+async function normalize(
+  feat: any,
+  coords: { lat: number; lng: number },
+  label: string
+): Promise<GwrBuilding | null> {
   const attrs = feat?.attributes;
   if (!attrs) return null;
 
@@ -164,25 +187,41 @@ export async function fetchBuildingByAddress(address: string): Promise<GwrBuildi
   // GWR gives footprint (GAREA) + floors; estimate heated area ≈ footprint × floors × 0.8
   const area = footprintArea ? Math.round(footprintArea * floors * 0.8) : 0;
 
-  // strip a trailing "<zip> <town>" off the geocoder label to recover town/zip
-  const zipMatch = geo.label.match(/\b(\d{4})\b/);
+  const clean = (label || "").replace(/<[^>]*>/g, "").trim();
+  const zipMatch = clean.match(/\b(\d{4})\b/);
   const zip = attrs.dplz4 ? String(attrs.dplz4) : zipMatch?.[1] ?? "";
   const district = attrs.ggdename ?? attrs.dplzname ?? "";
-
   const egid = Number(attrs.egid) || 0;
   const solar = await fetchSolar(egid); // non-fatal; null if unavailable
 
   return {
     egid,
-    address: geo.label.replace(/<[^>]*>/g, ""), // geocoder may return <b>…</b>
+    address: clean || `Gebäude EGID ${egid}`,
     zip,
     district,
     year: Number(attrs.gbauj) || 0,
     area,
     heating: src?.label ?? "Unbekannt",
     carrier: src?.carrier ?? "gas",
-    coords: { lat: geo.lat, lng: geo.lng },
+    coords,
     footprint: ringToWgs84(feat?.geometry),
     solar: solar ?? undefined,
   };
+}
+
+/** Geocode an address → identify + solar → normalized building record. */
+export async function fetchBuildingByAddress(address: string): Promise<GwrBuilding | null> {
+  const geo = await geocode(address);
+  if (!geo) return null;
+  const feat = await identifyBuilding(geo.x, geo.y);
+  return normalize(feat, { lat: geo.lat, lng: geo.lng }, geo.label);
+}
+
+/** Identify the GWR building under a clicked map point (WGS84). */
+export async function fetchBuildingByCoords(lat: number, lng: number): Promise<GwrBuilding | null> {
+  const { x, y } = wgs84ToLv95(lat, lng);
+  const feat = await identifyBuilding(x, y);
+  if (!feat) return null;
+  const label = feat.label || feat.attributes?.label || "";
+  return normalize(feat, { lat, lng }, label);
 }
