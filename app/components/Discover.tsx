@@ -1,7 +1,7 @@
 "use client";
 /* Discover — zipcode search, schematic Zürich map with pins, listing cards */
 import React from "react";
-import { listings as ALL, fmt, geak } from "@/app/lib/data";
+import { listings as ALL, fmt, geak, type Listing } from "@/app/lib/data";
 import { Brand, Steps, GeakChip } from "./primitives";
 import { MapView } from "./MapView";
 
@@ -11,12 +11,48 @@ interface DiscoverProps {
   selectedId: string | null;
   onSelect: (id: string) => void;
   onProceed: () => void;
+  extraListing: Listing | null;
+  onExternalListing: (l: Listing) => void;
 }
 
-export function Discover({ zip, onZip, selectedId, onSelect, onProceed }: DiscoverProps) {
+export function Discover({
+  zip,
+  onZip,
+  selectedId,
+  onSelect,
+  onProceed,
+  extraListing,
+  onExternalListing,
+}: DiscoverProps) {
   const all = ALL;
-  const matches = all.filter((l) => l.zip.startsWith(zip.trim()));
-  const sel = all.find((l) => l.id === selectedId);
+  const matched = all.filter((l) => l.zip.startsWith(zip.trim()));
+  // a GWR-looked-up building (if any) leads the list and appears on the map
+  const matches = extraListing
+    ? [extraListing, ...matched.filter((m) => m.id !== extraListing.id)]
+    : matched;
+  const sel = matches.find((l) => l.id === selectedId);
+
+  // GWR address lookup
+  const [addr, setAddr] = React.useState("");
+  const [status, setStatus] = React.useState<"idle" | "loading" | "error">("idle");
+  const [errMsg, setErrMsg] = React.useState("");
+
+  async function lookup() {
+    const q = addr.trim();
+    if (!q || status === "loading") return;
+    setStatus("loading");
+    setErrMsg("");
+    try {
+      const res = await fetch(`/api/building?address=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (!res.ok || !data.listing) throw new Error(data.error || "No building found");
+      onExternalListing(data.listing as Listing);
+      setStatus("idle");
+    } catch (e) {
+      setStatus("error");
+      setErrMsg(e instanceof Error ? e.message : "Lookup failed");
+    }
+  }
 
   return (
     <div className="discover">
@@ -56,6 +92,23 @@ export function Discover({ zip, onZip, selectedId, onSelect, onProceed }: Discov
               <span className="mono" style={{ fontSize: 11, color: "var(--faint)", paddingRight: 10 }}>
                 {matches.length} ↓
               </span>
+            </div>
+
+            <div className="gwr-lookup">
+              <div className="gwr-label">Don&apos;t see your place? Look up any Zürich address</div>
+              <div className="gwr-row">
+                <input
+                  value={addr}
+                  placeholder="e.g. Seefeldstrasse 142, 8008 Zürich"
+                  onChange={(e) => setAddr(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && lookup()}
+                />
+                <button className="btn sm" onClick={lookup} disabled={status === "loading"}>
+                  {status === "loading" ? "Looking up…" : "Look up"}
+                </button>
+              </div>
+              {status === "error" && <div className="gwr-err">{errMsg} — try “Street No, PLZ Town”.</div>}
+              <div className="gwr-hint">Pulls official building facts from the federal register (GWR).</div>
             </div>
           </div>
 

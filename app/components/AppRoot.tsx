@@ -2,7 +2,7 @@
 /* Root app — routing, lifted plan state, localStorage persistence.
    Ported from project/app/app.jsx */
 import React, { useState, useEffect } from "react";
-import { listings, computePlan, type PlanState } from "@/app/lib/data";
+import { listings, computePlan, type PlanState, type Listing } from "@/app/lib/data";
 import { Discover } from "./Discover";
 import { Reimagine } from "./Reimagine";
 import { Summary } from "./Summary";
@@ -35,6 +35,8 @@ export function AppRoot() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState("after");
   const [plan, setPlan] = useState<PlanState>({ systems: [], finishes: {} });
+  // a building pulled live from the GWR (not in the seed list)
+  const [external, setExternal] = useState<Listing | null>(null);
 
   useEffect(() => {
     const saved = loadState();
@@ -57,8 +59,14 @@ export function AppRoot() {
     }
   }, [hydrated, screen, zip, selectedId, view, plan]);
 
-  const listing = listings.find((l) => l.id === selectedId) || null;
+  const listing =
+    (external && external.id === selectedId ? external : listings.find((l) => l.id === selectedId)) || null;
   const computed = listing ? computePlan(listing, plan) : null;
+
+  const onExternalListing = (l: Listing) => {
+    setExternal(l);
+    setSelectedId(l.id);
+  };
 
   const toggleSystem = (id: string) =>
     setPlan((p) => ({
@@ -78,7 +86,17 @@ export function AppRoot() {
   };
 
   if (screen === "discover" || !listing) {
-    return <Discover zip={zip} onZip={setZip} selectedId={selectedId} onSelect={setSelectedId} onProceed={proceed} />;
+    return (
+      <Discover
+        zip={zip}
+        onZip={setZip}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        onProceed={proceed}
+        extraListing={external}
+        onExternalListing={onExternalListing}
+      />
+    );
   }
   if (screen === "summary" && computed) {
     return (

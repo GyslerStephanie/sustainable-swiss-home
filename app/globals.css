@@ -157,6 +157,19 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 12.5px; line-height: 1.6;
 }
 .method-list li { margin-bottom: 4px; }
+
+/* GWR address lookup */
+.gwr-lookup { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.gwr-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.gwr-row { display: flex; gap: 8px; }
+.gwr-row input {
+  flex: 1; min-width: 0; border: 1px solid var(--line-2); border-radius: 9px;
+  padding: 8px 11px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg-2);
+}
+.gwr-row input:focus { outline: none; border-color: var(--acc); }
+.gwr-row .btn { flex: none; }
+.gwr-hint { font-size: 10.5px; color: var(--faint); margin-top: 6px; font-family: var(--mono); }
+.gwr-err { font-size: 11.5px; color: var(--coral); margin-top: 6px; }
 .map-pane .water {
   position: absolute; left: 0; right: 0; bottom: 0; height: 42%;
   background: linear-gradient(180deg, oklch(0.92 0.04 230), oklch(0.88 0.06 235));
