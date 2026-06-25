@@ -16,9 +16,9 @@ interface MapViewProps {
   onPick?: (lng: number, lat: number) => void;
 }
 
-// Basemap: a reliable global fallback (Carto light) UNDER the official Swiss
-// map (swisstopo grey). swisstopo is opaque and covers Carto when it loads;
-// if its tiles ever fail, Carto still shows — so the map is never blank.
+// Basemap: swisstopo SWISSIMAGE aerial photography (free, no key) for a striking
+// look, with a transparent street/place-label layer on top for readability and a
+// reliable Carto fallback underneath so the map is never blank if aerial fails.
 const BASE_STYLE = {
   version: 8 as const,
   sources: {
@@ -32,18 +32,29 @@ const BASE_STYLE = {
       tileSize: 256,
       attribution: "© OpenStreetMap · © CARTO",
     },
-    swisstopo: {
+    swissimage: {
       type: "raster" as const,
       tiles: [
-        "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg",
+        "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg",
       ],
       tileSize: 256,
       attribution: "© swisstopo",
     },
+    labels: {
+      type: "raster" as const,
+      tiles: [
+        "https://a.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      attribution: "© OpenStreetMap · © CARTO",
+    },
   },
   layers: [
-    { id: "carto", type: "raster" as const, source: "carto" },
-    { id: "swisstopo", type: "raster" as const, source: "swisstopo" },
+    { id: "carto", type: "raster" as const, source: "carto" }, // fallback
+    { id: "swissimage", type: "raster" as const, source: "swissimage" }, // aerial
+    { id: "labels", type: "raster" as const, source: "labels" }, // street/place names
   ],
 };
 
@@ -166,13 +177,14 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
         id: "fp-fill",
         type: "fill",
         source: "footprints",
-        paint: { "fill-color": "#2f7d5b", "fill-opacity": 0.22 },
+        paint: { "fill-color": "#39d98a", "fill-opacity": 0.3 },
       });
       map.addLayer({
         id: "fp-line",
         type: "line",
         source: "footprints",
-        paint: { "line-color": "#2f7d5b", "line-width": 2 },
+        // white outline reads clearly on aerial imagery
+        paint: { "line-color": "#ffffff", "line-width": 2.5 },
       });
     }
 
