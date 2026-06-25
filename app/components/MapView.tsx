@@ -136,6 +136,25 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
     };
   }, []);
 
+  // TEMP live diagnostic: report each ancestor's size and force a resize each
+  // tick, so we can see exactly where the height collapses (and whether a late
+  // resize fixes it).
+  React.useEffect(() => {
+    const id = setInterval(() => {
+      const gl = containerRef.current;
+      if (!gl) return;
+      const size = (sel: string) => {
+        const el = sel === "gl" ? gl : document.querySelector("." + sel);
+        return el ? `${el.clientWidth}x${el.clientHeight}` : "?";
+      };
+      setDbg(
+        `gl=${size("gl")} pane=${size("map-pane")} wrap=${size("map-wrap")} body=${size("discover-body")} disc=${size("discover")}`
+      );
+      mapRef.current?.resize?.();
+    }, 600);
+    return () => clearInterval(id);
+  }, []);
+
   // 2. sync markers whenever the listing set changes
   React.useEffect(() => {
     const map = mapRef.current;
