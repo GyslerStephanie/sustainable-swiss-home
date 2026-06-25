@@ -56,7 +56,6 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
   const roRef = React.useRef<any>(null);
   const [ready, setReady] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
-  const [dbg, setDbg] = React.useState("mounting…"); // TEMP diagnostic
   const onSelectRef = React.useRef(onSelect);
   onSelectRef.current = onSelect;
   const onPickRef = React.useRef(onPick);
@@ -68,16 +67,10 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
     let map: any;
     (async () => {
       try {
-        setDbg("importing maplibre…");
         const mod = await import("maplibre-gl");
         const maplibregl = mod.default ?? (mod as any);
-        if (cancelled || !containerRef.current) {
-          setDbg(`early-return container=${!!containerRef.current} cancelled=${cancelled}`);
-          return;
-        }
+        if (cancelled || !containerRef.current) return;
         libRef.current = maplibregl;
-        const c0 = containerRef.current;
-        setDbg(`imported=${typeof maplibregl} Map=${typeof maplibregl?.Map} box=${c0.clientWidth}x${c0.clientHeight}`);
         map = new maplibregl.Map({
           container: containerRef.current,
           style: BASE_STYLE as any,
@@ -105,21 +98,15 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
         // to be loaded, so flag ready as soon as the map style is parsed. Using
         // the style.load event (fires even when tiles fail) keeps pins reliable.
         const flagReady = () => {
-          if (cancelled) return;
-          setReady(true);
-          const cc = containerRef.current;
-          setDbg(`ready box=${cc?.clientWidth}x${cc?.clientHeight} canvas=${!!map.getCanvas?.()}`);
+          if (!cancelled) setReady(true);
         };
         if (map.isStyleLoaded()) {
           flagReady();
         } else {
           map.once("styledata", flagReady);
         }
-      } catch (e: any) {
-        if (!cancelled) {
-          setFailed(true); // WebGL unavailable — degrade gracefully
-          setDbg(`THROW: ${e?.message ?? String(e)}`);
-        }
+      } catch {
+        if (!cancelled) setFailed(true); // WebGL unavailable — degrade gracefully
       }
     })();
     return () => {
@@ -134,25 +121,6 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
       mapRef.current = null;
       setReady(false);
     };
-  }, []);
-
-  // TEMP live diagnostic: report each ancestor's size and force a resize each
-  // tick, so we can see exactly where the height collapses (and whether a late
-  // resize fixes it).
-  React.useEffect(() => {
-    const id = setInterval(() => {
-      const gl = containerRef.current;
-      if (!gl) return;
-      const size = (sel: string) => {
-        const el = sel === "gl" ? gl : document.querySelector("." + sel);
-        return el ? `${el.clientWidth}x${el.clientHeight}` : "?";
-      };
-      setDbg(
-        `gl=${size("gl")} pane=${size("map-pane")} wrap=${size("map-wrap")} body=${size("discover-body")} disc=${size("discover")}`
-      );
-      mapRef.current?.resize?.();
-    }, 600);
-    return () => clearInterval(id);
   }, []);
 
   // 2. sync markers whenever the listing set changes
@@ -255,24 +223,6 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
           Map unavailable in this browser — use the property list on the right.
         </div>
       )}
-      {/* TEMP diagnostic — remove once map confirmed */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 8,
-          left: 8,
-          zIndex: 9999,
-          background: "rgba(10,12,16,0.88)",
-          color: "#7CFC9A",
-          font: "11px/1.4 ui-monospace,monospace",
-          padding: "6px 9px",
-          borderRadius: 7,
-          maxWidth: "92%",
-          pointerEvents: "none",
-        }}
-      >
-        MAP DIAG · ready={String(ready)} · {dbg}
-      </div>
     </div>
   );
 }
