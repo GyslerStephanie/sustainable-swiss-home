@@ -3,6 +3,7 @@
 import React from "react";
 import { listings as ALL, fmt, geak } from "@/app/lib/data";
 import { Brand, Steps, GeakChip } from "./primitives";
+import { MapView } from "./MapView";
 
 interface DiscoverProps {
   zip: string;
@@ -25,36 +26,17 @@ export function Discover({ zip, onZip, selectedId, onSelect, onProceed }: Discov
         <Steps current="discover" />
         <div className="spacer"></div>
         <span className="mono" style={{ fontSize: 11, color: "var(--faint)" }}>
-          Prototype · mock Zürich data
+          Seed Zürich data · swisstopo basemap
         </span>
       </div>
 
       <div className="discover-body">
         {/* MAP */}
-        <div className="map-pane blueprint-bg">
-          <div className="map-canvas blueprint-bg"></div>
-          <div className="water"></div>
-          {/* a couple of schematic roads */}
-          <div className="road" style={{ left: "8%", top: 0, width: 4, height: "70%", transform: "rotate(6deg)" }}></div>
-          <div className="road" style={{ left: 0, top: "34%", width: "64%", height: 4, transform: "rotate(-4deg)" }}></div>
-          <div className="road" style={{ left: "30%", top: 0, width: 4, height: "100%", transform: "rotate(-10deg)" }}></div>
-          <div className="road" style={{ left: "10%", top: "55%", width: "80%", height: 4, transform: "rotate(3deg)" }}></div>
-
+        <div className="map-wrap">
+          <MapView listings={matches} selectedId={selectedId} onSelect={onSelect} />
           <div className="map-overlay-label">
             Zürich · {matches.length} {matches.length === 1 ? "property" : "properties"}
           </div>
-
-          {matches.map((l) => (
-            <div
-              key={l.id}
-              className={"pin" + (l.id === selectedId ? " sel" : "")}
-              style={{ left: l.pin.x + "%", top: l.pin.y + "%" }}
-              onClick={() => onSelect(l.id)}
-            >
-              <div className="dot"></div>
-              <div className="price">{fmt.CHFk(l.price)}</div>
-            </div>
-          ))}
         </div>
 
         {/* LISTINGS */}

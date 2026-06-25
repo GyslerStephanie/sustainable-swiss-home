@@ -19,9 +19,13 @@ import {
 } from "./engine";
 
 // ---------- formatting helpers ----------
-const fmtCHF = (n: number) => "CHF " + Math.round(n).toLocaleString("de-CH");
+// Deterministic Swiss grouping with a fixed apostrophe (U+2019). Avoids
+// toLocaleString, whose separator char varies between server/browser ICU
+// versions and caused SSR/client hydration mismatches (React #418).
+const groupCHF = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "’");
+const fmtCHF = (n: number) => "CHF " + groupCHF(n);
 const fmtCHFk = (n: number) => "CHF " + Math.round(n / 1000) + "k";
-export const fmt = { CHF: fmtCHF, CHFk: fmtCHFk };
+export const fmt = { CHF: fmtCHF, CHFk: fmtCHFk, group: groupCHF };
 
 // ---------- types ----------
 export type Grade = "A" | "B" | "C" | "D" | "E" | "F" | "G";
@@ -36,11 +40,10 @@ export interface Listing {
   year: number;
   area: number;
   price: number;
-  baseEnergy: number; // kWh/m²·yr
-  baseCO2: number; // t/yr (operational)
+  baseEnergy: number; // kWh/m²·yr (measured if known, else estimated per construction era)
   heating: string;
   blurb: string;
-  pin: { x: number; y: number };
+  coords: { lat: number; lng: number }; // real WGS84 location for the map
 }
 
 export interface Upgrade {
@@ -111,7 +114,10 @@ export const geak = {
   },
 };
 
-// ---------- mock Zürich listings ----------
+// ---------- Zürich seed listings ----------
+// Curated seed set: real Zürich streets/districts with real WGS84 coordinates.
+// Prices, areas and availability are indicative and must be confirmed against a
+// licensed listings feed (see providers.ts) before going live.
 export const listings: Listing[] = [
   {
     id: "seefeld",
@@ -123,10 +129,9 @@ export const listings: Listing[] = [
     area: 112,
     price: 1485000,
     baseEnergy: 142,
-    baseCO2: 5.1,
     heating: "Öl",
     blurb: "Charming but tired — original oil heating, single-glazed.",
-    pin: { x: 41, y: 47 },
+    coords: { lat: 47.354, lng: 8.553 },
   },
   {
     id: "wiedikon",
@@ -138,10 +143,9 @@ export const listings: Listing[] = [
     area: 84,
     price: 985000,
     baseEnergy: 158,
-    baseCO2: 4.6,
     heating: "Gas",
     blurb: "Compact city flat, gas boiler, great bones.",
-    pin: { x: 28, y: 62 },
+    coords: { lat: 47.372, lng: 8.518 },
   },
   {
     id: "oerlikon",
@@ -153,10 +157,9 @@ export const listings: Listing[] = [
     area: 146,
     price: 1690000,
     baseEnergy: 121,
-    baseCO2: 4.2,
     heating: "Öl",
     blurb: "Family townhouse with roof + garden potential.",
-    pin: { x: 58, y: 22 },
+    coords: { lat: 47.41, lng: 8.544 },
   },
   {
     id: "altstetten",
@@ -168,10 +171,9 @@ export const listings: Listing[] = [
     area: 104,
     price: 1145000,
     baseEnergy: 134,
-    baseCO2: 4.8,
     heating: "Öl",
     blurb: "South-facing, big balcony, dated interior.",
-    pin: { x: 16, y: 39 },
+    coords: { lat: 47.388, lng: 8.488 },
   },
   {
     id: "enge",
@@ -183,10 +185,51 @@ export const listings: Listing[] = [
     area: 92,
     price: 1320000,
     baseEnergy: 148,
-    baseCO2: 5.0,
     heating: "Gas",
     blurb: "Lakeside location, premium upside on renovation.",
-    pin: { x: 37, y: 74 },
+    coords: { lat: 47.362, lng: 8.536 },
+  },
+  {
+    id: "hottingen",
+    address: "Hofackerstrasse 40",
+    zip: "8032",
+    district: "Hottingen",
+    type: "5.5-Zi. Einfamilienhaus",
+    year: 1955,
+    area: 165,
+    price: 2150000,
+    baseEnergy: 165,
+    heating: "Öl",
+    blurb: "Detached house, large plot — full envelope retrofit candidate.",
+    coords: { lat: 47.366, lng: 8.567 },
+  },
+  {
+    id: "escherwyss",
+    address: "Hardturmstrasse 200",
+    zip: "8005",
+    district: "Escher Wyss",
+    type: "3.5-Zi. Wohnung",
+    year: 1998,
+    area: 88,
+    price: 1095000,
+    baseEnergy: 95,
+    heating: "Gas",
+    blurb: "Converted industrial quarter, already moderate efficiency.",
+    coords: { lat: 47.391, lng: 8.518 },
+  },
+  {
+    id: "friesenberg",
+    address: "Friesenbergstrasse 110",
+    zip: "8055",
+    district: "Friesenberg",
+    type: "4.5-Zi. Wohnung",
+    year: 1971,
+    area: 108,
+    price: 1075000,
+    baseEnergy: 138,
+    heating: "Öl",
+    blurb: "Cooperative-style block on the Uetliberg slope, sunny aspect.",
+    coords: { lat: 47.363, lng: 8.503 },
   },
 ];
 

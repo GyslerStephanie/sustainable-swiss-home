@@ -18,7 +18,7 @@
      estimates where a listing price is absent.
    ============================================================ */
 import { listings as seedListings, type Listing } from "./data";
-import { typicalDemand, carrierOf, finalEnergy, EMISSION } from "./engine";
+import { typicalDemand } from "./engine";
 
 export interface ListingQuery {
   zip?: string;
@@ -64,12 +64,11 @@ export function buildingFromGwr(record: {
   year: number;
   area: number;
   heating: string; // GWR genh1 code mapped to a label upstream
+  coords: { lat: number; lng: number }; // from GWR GKODE/GKODN (LV95 → WGS84)
   price?: number;
   measuredEnergy?: number; // kWh/m²·yr if known
 }): Listing {
   const baseEnergy = record.measuredEnergy ?? typicalDemand(record.year);
-  const carrier = carrierOf(record.heating);
-  const baseCO2 = +((finalEnergy(baseEnergy, record.area, carrier) * EMISSION[carrier]) / 1000).toFixed(1);
   return {
     id: `egid-${record.egid}`,
     address: record.address,
@@ -80,10 +79,9 @@ export function buildingFromGwr(record: {
     area: record.area,
     price: record.price ?? 0,
     baseEnergy,
-    baseCO2,
     heating: record.heating,
     blurb: "",
-    pin: { x: 50, y: 50 }, // replaced by real lat/lng on the map layer
+    coords: record.coords, // GWR supplies GKODE/GKODN → WGS84
   };
 }
 

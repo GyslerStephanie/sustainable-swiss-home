@@ -1,7 +1,7 @@
 "use client";
 /* Shared UI primitives — ported from project/app/components.jsx */
 import React, { useState, useEffect, useRef } from "react";
-import type { Grade } from "@/app/lib/data";
+import { fmt, type Grade } from "@/app/lib/data";
 
 /* animate a number toward its target on change */
 export function useAnimatedNumber(value: number, duration = 500): number {
@@ -40,7 +40,7 @@ export function AnimatedCHF({ value, prefix = "CHF ", suffix = "" }: { value: nu
   return (
     <>
       {prefix}
-      {Math.round(d).toLocaleString("de-CH")}
+      {fmt.group(d)}
       {suffix}
     </>
   );
@@ -48,7 +48,7 @@ export function AnimatedCHF({ value, prefix = "CHF ", suffix = "" }: { value: nu
 
 export function AnimatedNum({ value, digits = 0, suffix = "" }: { value: number; digits?: number; suffix?: string }) {
   const d = useAnimatedNumber(value);
-  const v = digits ? d.toFixed(digits) : Math.round(d).toLocaleString("de-CH");
+  const v = digits ? d.toFixed(digits) : fmt.group(d);
   return (
     <>
       {v}
