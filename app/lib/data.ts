@@ -1,8 +1,22 @@
 /* ============================================================
    Sustainable Swiss Home — data model + calculation engine
    Ported from the prototype (project/app/data.js) to typed TS.
-   All figures are INDICATIVE mock data for the prototype.
+
+   Carbon, energy-cost, GEAK class and financing are now derived
+   from REAL, sourced Swiss factors in ./engine.ts (KBOB emission
+   factors, SIA energy bands, HFM/Gebäudeprogramm subsidies). The
+   `listings` array below is still seed data — real listings/GWR
+   records arrive via the provider seam in ./providers.ts.
    ============================================================ */
+import {
+  EMISSION,
+  PRICE,
+  GEAK_BOUNDS,
+  FINANCE,
+  carrierOf,
+  finalEnergy,
+  subsidyForUpgrade,
+} from "./engine";
 
 // ---------- formatting helpers ----------
 const fmtCHF = (n: number) => "CHF " + Math.round(n).toLocaleString("de-CH");
@@ -82,15 +96,7 @@ export interface PlanState {
 // ---------- GEAK energy scale (kWh/m²·yr) ----------
 // Calibrated so ~142 reads E and ~58 reads B.
 const grades: Grade[] = ["A", "B", "C", "D", "E", "F", "G"];
-const bounds: Record<Grade, number> = {
-  A: 30,
-  B: 60,
-  C: 90,
-  D: 120,
-  E: 150,
-  F: 190,
-  G: Infinity,
-};
+const bounds: Record<Grade, number> = { ...GEAK_BOUNDS, G: Infinity };
 export const geak = {
   grades,
   bounds,
@@ -379,7 +385,10 @@ export function computePlan(listing: Listing, state: PlanState): ComputedPlan {
   active.forEach((u) => {
     const c = u.cost.fixed + u.cost.perM2 * area;
     systemsCost += c;
-    const sub = Math.min(c * u.subsidyRate, u.subsidyCap);
+    // real per-basis subsidy (CHF/m², per kW, per kWp) capped at the measure cost;
+    // fall back to the catalog rate for any measure not yet modelled.
+    const real = subsidyForUpgrade(u.id, area);
+    const sub = real != null ? Math.min(real, c) : Math.min(c * u.subsidyRate, u.subsidyCap);
     subsidyTotal += sub;
     valueUplift += u.value.fixed + u.value.perM2 * area;
     energyReduction += u.energy;
@@ -414,14 +423,27 @@ export function computePlan(listing: Listing, state: PlanState): ComputedPlan {
   });
   void finishEmbodied; // computed for parity with prototype; not surfaced in UI
 
-  // energy + rating
+  // energy demand + rating (useful space-heat demand, kWh/m²·yr)
   const energyUse = Math.max(15, Math.round(listing.baseEnergy - energyReduction));
   const baseGrade = geak.of(listing.baseEnergy);
   const newGrade = geak.of(energyUse);
   const gradeJump = geak.index(baseGrade) - geak.index(newGrade);
 
-  // co2
-  const co2 = Math.max(0.4, +(listing.baseCO2 - co2Reduction).toFixed(1));
+  // carbon — derived from carrier × final energy (KBOB factors), not flat sums.
+  // A heat pump switches the carrier to electricity (with SPF leverage).
+  const carrierBefore = carrierOf(listing.heating);
+  const switchesToHP = state.systems.includes("heatpump");
+  const carrierAfter = switchesToHP ? "electricity" : carrierBefore;
+  const finalBefore = finalEnergy(listing.baseEnergy, area, carrierBefore);
+  let finalAfter = finalEnergy(energyUse, area, carrierAfter);
+  // rooftop PV offsets grid electricity (≈ its modelled energy contribution × area)
+  const pvKwh = state.systems.includes("pv")
+    ? (upgrades.find((u) => u.id === "pv")?.energy ?? 0) * area
+    : 0;
+  if (carrierAfter === "electricity") finalAfter = Math.max(0, finalAfter - pvKwh);
+  const baseCO2 = +((finalBefore * EMISSION[carrierBefore]) / 1000).toFixed(1); // t/yr
+  const co2 = Math.max(0, +((finalAfter * EMISSION[carrierAfter]) / 1000 - (carrierAfter !== "electricity" ? (pvKwh * EMISSION.electricity) / 1000 : 0)).toFixed(1));
+  void co2Reduction; // superseded by carrier-aware carbon model above
 
   // minergie status
   let minergie: string | null = null;
@@ -435,11 +457,13 @@ export function computePlan(listing: Listing, state: PlanState): ComputedPlan {
   // money
   const renoCost = systemsCost + finishCost;
   const financed = Math.max(0, renoCost - subsidyTotal);
-  // blended monthly: ~2.0% interest + light amortization over the financed reno
-  const monthlyFinance = financed * 0.0044;
-  // energy savings: reduced kWh * area * effective CHF/kWh, monthly
-  const kwhSaved = (listing.baseEnergy - energyUse) * area;
-  const monthlyEnergySaving = (kwhSaved * 0.16) / 12;
+  // interest carry on the financed (post-subsidy) reno, folded into the mortgage
+  const monthlyFinance = (financed * FINANCE.mortgageRate) / 12;
+  // energy-cost saving: real CHF/kWh per carrier, before − after
+  const costBefore = finalBefore * PRICE[carrierBefore];
+  const costAfter = finalAfter * PRICE[carrierAfter];
+  const monthlyEnergySaving = Math.max(0, (costBefore - costAfter) / 12);
+  const kwhSaved = Math.round(finalBefore - finalAfter);
   const netMonthly = Math.round(monthlyFinance - monthlyEnergySaving);
 
   return {
@@ -450,9 +474,9 @@ export function computePlan(listing: Listing, state: PlanState): ComputedPlan {
     baseEnergy: listing.baseEnergy,
     energyUse,
     energyReduction,
-    baseCO2: listing.baseCO2,
+    baseCO2,
     co2,
-    co2Reduction,
+    co2Reduction: +(baseCO2 - co2).toFixed(1),
     systemsCost,
     finishCost,
     renoCost,
