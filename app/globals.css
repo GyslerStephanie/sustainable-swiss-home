@@ -151,6 +151,12 @@ button { font-family: inherit; cursor: pointer; }
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   text-align: center; padding: 0 30px; color: var(--faint); font-size: 13px;
 }
+
+.method-list {
+  margin: 6px 0 0; padding-left: 18px; color: var(--muted);
+  font-size: 12.5px; line-height: 1.6;
+}
+.method-list li { margin-bottom: 4px; }
 .map-pane .water {
   position: absolute; left: 0; right: 0; bottom: 0; height: 42%;
   background: linear-gradient(180deg, oklch(0.92 0.04 230), oklch(0.88 0.06 235));

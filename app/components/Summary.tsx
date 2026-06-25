@@ -2,6 +2,7 @@
 /* Summary — the generated renovation dossier + connect directory */
 import React from "react";
 import { fmt, type Listing, type PlanState, type ComputedPlan } from "@/app/lib/data";
+import { ASSUMPTIONS } from "@/app/lib/engine";
 import { Brand, Steps, GeakBadge } from "./primitives";
 
 interface SummaryProps {
@@ -272,7 +273,7 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
                   <td className="r">{fmt.CHF(computed.financed)}</td>
                 </tr>
                 <tr>
-                  <td>Modelled rate (incl. light amortization)</td>
+                  <td>Interest rate on financed amount</td>
                   <td className="r">~2.0%</td>
                 </tr>
                 <tr>
@@ -339,6 +340,16 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Methodology */}
+          <div className="doc-sec">
+            <h2>Methodology &amp; sources</h2>
+            <ul className="method-list">
+              {ASSUMPTIONS.map((a, i) => (
+                <li key={i}>{a}</li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

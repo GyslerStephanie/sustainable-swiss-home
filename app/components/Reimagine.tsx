@@ -293,8 +293,9 @@ export function Reimagine({ listing, state, computed, view, setView, onToggleSys
               </span>
             </div>
             <p className="assump">
-              Financed at ~2% incl. light amortization, net of energy savings (~CHF {computed.monthlyEnergySaving}/mo). Subsidies indicative
-              (Gebäudeprogramm, Kanton ZH, Pronovo). Figures for orientation, not an offer.
+              ~2% interest on the post-subsidy amount, net of energy savings (~CHF {computed.monthlyEnergySaving}/mo from
+              real per-carrier prices). Subsidies modelled on Gebäudeprogramm / HFM 2015 (Kanton ZH) &amp; Pronovo —
+              indicative, not an offer.
             </p>
           </div>
 
