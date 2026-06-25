@@ -3,6 +3,7 @@
    Ported from project/app/app.jsx */
 import React, { useState, useEffect } from "react";
 import { listings, computePlan, type PlanState, type Listing } from "@/app/lib/data";
+import { decodeShare } from "@/app/lib/share";
 import { Discover } from "./Discover";
 import { Reimagine } from "./Reimagine";
 import { Summary } from "./Summary";
@@ -39,6 +40,24 @@ export function AppRoot() {
   const [external, setExternal] = useState<Listing | null>(null);
 
   useEffect(() => {
+    // A shared link (#plan=…) wins over local state — open its dossier directly.
+    const m = window.location.hash.match(/[#&]plan=([^&]+)/);
+    const shared = m ? decodeShare(decodeURIComponent(m[1])) : null;
+    if (shared) {
+      if (shared.ext) {
+        setExternal(shared.ext);
+        setSelectedId(shared.ext.id);
+      } else if (shared.id) {
+        setSelectedId(shared.id);
+      }
+      setPlan(shared.plan);
+      setScreen("summary");
+      // clean the URL so a later reload doesn't pin the shared view
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      setHydrated(true);
+      return;
+    }
+
     const saved = loadState();
     if (saved) {
       setScreen(saved.screen || "discover");

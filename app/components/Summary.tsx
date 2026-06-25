@@ -3,6 +3,7 @@
 import React from "react";
 import { fmt, DIRECTORY, type Listing, type PlanState, type ComputedPlan } from "@/app/lib/data";
 import { ASSUMPTIONS } from "@/app/lib/engine";
+import { encodeShare } from "@/app/lib/share";
 import { Brand, Steps, GeakBadge } from "./primitives";
 
 interface SummaryProps {
@@ -49,6 +50,26 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
     who: "Bank · Mortgage advisor",
   });
 
+  // Stateless share link — the plan encoded into the URL (no backend).
+  // origin is only known client-side, so fill it in after mount.
+  const shareToken = encodeShare(listing, state);
+  const [origin, setOrigin] = React.useState("");
+  const [copied, setCopied] = React.useState(false);
+  React.useEffect(() => {
+    setOrigin(window.location.origin + window.location.pathname);
+  }, []);
+  const shareUrl = origin ? `${origin}#plan=${shareToken}` : "";
+  const copyShare = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      /* clipboard blocked — the email/print paths still carry the plan */
+    }
+  };
+
   // A real, sendable brief — prefilled email a homeowner can fire off to any pro.
   const measures = computed.costLines.map((c) => `· ${c.name}`).join("\n") || "· (none selected yet)";
   const shareBody =
@@ -59,6 +80,7 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
     `Planned measures:\n${measures}\n\n` +
     `Indicative cost: ${fmt.CHF(computed.renoCost)} · subsidies ${fmt.CHF(computed.subsidyTotal)} · ` +
     `net to finance ${fmt.CHF(computed.financed)}\n\n` +
+    (shareUrl ? `Open the interactive dossier: ${shareUrl}\n\n` : "") +
     `Generated with Sustainable Dwellings. Figures are indicative — I'd like a quote.`;
   const shareHref = `mailto:?subject=${encodeURIComponent("Renovation brief — " + listing.address)}&body=${encodeURIComponent(shareBody)}`;
 
@@ -79,6 +101,9 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
         <div style={{ width: 1, height: 26, background: "var(--line)" }}></div>
         <Steps current="summary" />
         <div className="spacer"></div>
+        <button className="btn" onClick={copyShare} disabled={!shareUrl} title="Copy a shareable link to this dossier">
+          {copied ? "✓ Link copied" : "🔗 Copy share link"}
+        </button>
         <button className="btn" onClick={onPrint}>
           ⤓ Export PDF
         </button>
