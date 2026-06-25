@@ -53,6 +53,7 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
   const mapRef = React.useRef<any>(null);
   const libRef = React.useRef<any>(null);
   const markersRef = React.useRef<Record<string, { marker: any; el: HTMLDivElement }>>({});
+  const roRef = React.useRef<any>(null);
   const [ready, setReady] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const onSelectRef = React.useRef(onSelect);
@@ -84,6 +85,14 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
         });
         if (onPickRef.current) map.getCanvas().style.cursor = "crosshair";
         mapRef.current = map;
+        // Re-measure once layout settles and on any container resize — guards
+        // against the map initialising before its box has a resolved height.
+        if (containerRef.current && typeof ResizeObserver !== "undefined") {
+          const ro = new ResizeObserver(() => map.resize());
+          ro.observe(containerRef.current);
+          roRef.current = ro;
+        }
+        requestAnimationFrame(() => map.resize());
         // Markers are DOM overlays projected from lng/lat — they don't need tiles
         // to be loaded, so flag ready as soon as the map style is parsed. Using
         // the style.load event (fires even when tiles fail) keeps pins reliable.
@@ -100,6 +109,10 @@ export function MapView({ listings, selectedId, onSelect, onPick }: MapViewProps
     })();
     return () => {
       cancelled = true;
+      if (roRef.current) {
+        roRef.current.disconnect();
+        roRef.current = null;
+      }
       Object.values(markersRef.current).forEach(({ marker }) => marker.remove());
       markersRef.current = {};
       if (map) map.remove();
