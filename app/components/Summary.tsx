@@ -1,7 +1,7 @@
 "use client";
 /* Summary — the generated renovation dossier + connect directory */
 import React from "react";
-import { fmt, type Listing, type PlanState, type ComputedPlan } from "@/app/lib/data";
+import { fmt, DIRECTORY, type Listing, type PlanState, type ComputedPlan } from "@/app/lib/data";
 import { ASSUMPTIONS } from "@/app/lib/engine";
 import { Brand, Steps, GeakBadge } from "./primitives";
 
@@ -49,52 +49,19 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
     who: "Bank · Mortgage advisor",
   });
 
-  const connect: { ic: string; color: string; title: string; sub: string; desc: string; partners: [string, string][] }[] = [
-    {
-      ic: "B",
-      color: "acc",
-      title: "Banks & financing",
-      sub: "Mortgage + green rates",
-      desc: "Pre-qualify with your dossier and target rating.",
-      partners: [
-        ["ZKB Eigenheim", "Green-rate · ZH"],
-        ["Raiffeisen Hypothek", "Renovation finance"],
-      ],
-    },
-    {
-      ic: "A",
-      color: "coral",
-      title: "Architects & designers",
-      sub: "Minergie-experienced",
-      desc: "Practices matched to your scope and canton.",
-      partners: [
-        ["Atelier Nordfassade", "Minergie · Zürich"],
-        ["Studio Lichtbau", "Renovation · Altbau"],
-      ],
-    },
-    {
-      ic: "C",
-      color: "green",
-      title: "Builders & trades",
-      sub: "Vetted installers",
-      desc: "Certified for heat pumps, PV and envelope work.",
-      partners: [
-        ["Wärmebau AG", "WP · cert."],
-        ["SolarZH GmbH", "PV · Pronovo"],
-      ],
-    },
-    {
-      ic: "E",
-      color: "purple",
-      title: "Energy advisors",
-      sub: "GEAK-certified",
-      desc: "Run the formal audit and unlock advisory grants.",
-      partners: [
-        ["GEAK-Experte Meier", "GEAK Plus"],
-        ["EnergieBeratung ZH", "Cantonal grants"],
-      ],
-    },
-  ];
+  // A real, sendable brief — prefilled email a homeowner can fire off to any pro.
+  const measures = computed.costLines.map((c) => `· ${c.name}`).join("\n") || "· (none selected yet)";
+  const shareBody =
+    `Renovation brief — ${listing.address}, ${listing.zip} ${listing.district}\n\n` +
+    `Building: ${listing.type}, ${listing.area} m², Baujahr ${listing.year}\n` +
+    `Energy rating: ${computed.baseGrade} → ${computed.newGrade} (${computed.energyUse} kWh/m²·yr)\n` +
+    `CO₂ reduction: ${computed.co2Reduction.toFixed(1)} t/yr\n\n` +
+    `Planned measures:\n${measures}\n\n` +
+    `Indicative cost: ${fmt.CHF(computed.renoCost)} · subsidies ${fmt.CHF(computed.subsidyTotal)} · ` +
+    `net to finance ${fmt.CHF(computed.financed)}\n\n` +
+    `Generated with Sustainable Dwellings. Figures are indicative — I'd like a quote.`;
+  const shareHref = `mailto:?subject=${encodeURIComponent("Renovation brief — " + listing.address)}&body=${encodeURIComponent(shareBody)}`;
+
   const colorMap: Record<string, [string, string]> = {
     acc: ["var(--acc-soft)", "var(--acc-2)"],
     coral: ["var(--coral-soft)", "var(--coral)"],
@@ -229,9 +196,9 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
                 <thead>
                   <tr>
                     <th>Programme</th>
-                    <th>Scope</th>
                     <th>Applies to</th>
                     <th className="r">Amount</th>
+                    <th>Apply</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -239,22 +206,36 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
                     <tr key={i}>
                       <td>
                         <b>{s.name}</b>
+                        <div style={{ color: "var(--faint)", fontSize: 11.5 }}>{s.scope}</div>
+                        {s.apply && (
+                          <span className={"apply-tag" + (/AFTER/i.test(s.apply) ? " after" : "")}>{s.apply}</span>
+                        )}
                       </td>
-                      <td style={{ color: "var(--muted)" }}>{s.scope}</td>
                       <td style={{ color: "var(--muted)" }}>{s.upgrade}</td>
                       <td className="r pos">{fmt.CHF(s.amount)}</td>
+                      <td>
+                        {s.url ? (
+                          <a className="apply-link" href={s.url} target="_blank" rel="noopener noreferrer">
+                            Open portal ↗
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={3}>Total support</td>
+                    <td colSpan={2}>Total support</td>
                     <td className="r pos">−{fmt.CHF(computed.subsidyTotal)}</td>
+                    <td></td>
                   </tr>
                 </tfoot>
               </table>
               <p style={{ fontSize: 12, color: "var(--faint)", fontFamily: "var(--mono)", marginTop: 10 }}>
-                Indicative. Exact amounts and eligibility change yearly and by canton — confirm before committing.
+                Indicative. Exact amounts and eligibility change yearly and by canton — confirm on each portal.
+                Most grants must be filed <b>before</b> works begin (PV is registered after commissioning).
               </p>
             </div>
           )}
@@ -314,32 +295,35 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
 
           {/* Connect */}
           <div className="doc-sec">
-            <h2>Connect — take it to the people who build</h2>
+            <h2>Connect — apply, and take it to the people who build</h2>
             <div className="connect-grid">
-              {connect.map((c, i) => (
-                <div className="connect-card" key={i}>
+              {DIRECTORY.map((c) => (
+                <div className="connect-card" key={c.key}>
                   <div className="cc-top">
                     <div className="cc-ic" style={{ background: colorMap[c.color][0], color: colorMap[c.color][1] }}>
                       {c.ic}
                     </div>
                     <div>
                       <h4>{c.title}</h4>
-                      <div className="cc-sub">{c.sub}</div>
                     </div>
                   </div>
                   <p>{c.desc}</p>
-                  {c.partners.map((p, j) => (
-                    <div className="partner" key={j}>
-                      <span className="pn">{p[0]}</span>
-                      <span className="pm">{p[1]}</span>
-                    </div>
+                  {c.links.map((l, j) => (
+                    <a className="partner" key={j} href={l.href} target="_blank" rel="noopener noreferrer">
+                      <span className="pn">{l.label} ↗</span>
+                      <span className="pm">{l.sub}</span>
+                    </a>
                   ))}
-                  <button className="btn sm" style={{ width: "100%", justifyContent: "center", marginTop: 12 }}>
-                    Share dossier →
-                  </button>
                 </div>
               ))}
             </div>
+            <a className="btn primary" href={shareHref} style={{ marginTop: 16, justifyContent: "center" }}>
+              ✉ Email this brief to a pro
+            </a>
+            <p style={{ fontSize: 11.5, color: "var(--faint)", fontFamily: "var(--mono)", marginTop: 8 }}>
+              Opens your mail app with the building, target rating, measures and indicative costs prefilled. Links are
+              official / authoritative directories — not paid placements.
+            </p>
           </div>
 
           {/* Methodology */}

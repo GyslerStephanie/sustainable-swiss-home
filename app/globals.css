@@ -478,6 +478,21 @@ button { font-family: inherit; cursor: pointer; }
 .partner { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
 .partner .pn { font-weight: 600; }
 .partner .pm { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+/* anchor variant: clickable directory rows */
+a.partner { flex-direction: column; align-items: flex-start; gap: 2px; text-decoration: none; color: inherit; transition: opacity 0.12s; }
+a.partner:hover { opacity: 0.62; }
+a.partner .pn { color: var(--acc-2); }
+a.partner .pm { white-space: normal; }
+
+/* subsidy apply links + timing tags */
+.apply-link { color: var(--acc-2); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.apply-link:hover { text-decoration: underline; }
+.apply-tag {
+  display: inline-block; margin-top: 4px; padding: 1px 7px; border-radius: 999px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.03em;
+  background: var(--coral-soft); color: var(--coral);
+}
+.apply-tag.after { background: var(--green-soft); color: var(--green-2); }
 
 /* scrollbars */
 ::-webkit-scrollbar { width: 11px; height: 11px; }

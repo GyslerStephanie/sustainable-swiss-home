@@ -78,6 +78,9 @@ export interface Subsidy {
   name: string;
   scope: string;
   covers: string[];
+  agency: string; // who runs the programme
+  url: string; // official application / information portal
+  apply: string; // the critical timing rule (CH: most grants must be filed BEFORE works)
 }
 
 export interface Room {
@@ -344,11 +347,99 @@ export const finishes: Finish[] = [
 export const finishById = (id: string): Finish => finishes.find((f) => f.id === id) || finishes[0];
 
 // ---------- subsidy programmes (for labelling in the dossier) ----------
+// Official Swiss programmes. URLs are canonical entry points; rates/eligibility
+// change yearly and by canton — confirm on the portal before filing.
 export const subsidies: Subsidy[] = [
-  { id: "gebaeude", name: "Das Gebäudeprogramm", scope: "Federal + cantonal", covers: ["facade", "roof", "windows"] },
-  { id: "kanton", name: "Kanton ZH — Heizungsersatz", scope: "Cantonal", covers: ["heatpump"] },
-  { id: "pronovo", name: "Pronovo — EIV (PV)", scope: "Federal", covers: ["pv"] },
-  { id: "comfort", name: "Komfortlüftungs-Förderung", scope: "Cantonal", covers: ["mvhr"] },
+  {
+    id: "gebaeude",
+    name: "Das Gebäudeprogramm",
+    scope: "Federal + cantonal",
+    covers: ["facade", "roof", "windows"],
+    agency: "Bund & Kantone",
+    url: "https://www.dasgebaeudeprogramm.ch",
+    apply: "File BEFORE works begin",
+  },
+  {
+    id: "kanton",
+    name: "Kanton ZH — Heizungsersatz",
+    scope: "Cantonal (ZH)",
+    covers: ["heatpump"],
+    agency: "Baudirektion Kanton Zürich",
+    url: "https://www.zh.ch/de/umwelt-tiere/energie/foerderung-energie.html",
+    apply: "File BEFORE replacing the boiler",
+  },
+  {
+    id: "pronovo",
+    name: "Pronovo — Einmalvergütung (PV)",
+    scope: "Federal",
+    covers: ["pv"],
+    agency: "Pronovo AG (on behalf of the Confederation)",
+    url: "https://pronovo.ch/de/foerderung/einmalverguetung/",
+    apply: "Register AFTER the system is commissioned",
+  },
+  {
+    id: "comfort",
+    name: "Komfortlüftung (within a comprehensive reno)",
+    scope: "Cantonal (ZH)",
+    covers: ["mvhr"],
+    agency: "Baudirektion Kanton Zürich",
+    url: "https://www.zh.ch/de/umwelt-tiere/energie/foerderung-energie.html",
+    apply: "File BEFORE works begin",
+  },
+];
+
+// Real, actionable directories — finding certified pros and filing applications.
+// These are official / authoritative entry points, not paid partner placements.
+export interface Resource {
+  label: string;
+  sub: string;
+  href: string;
+}
+export const DIRECTORY: { key: string; ic: string; color: string; title: string; desc: string; links: Resource[] }[] = [
+  {
+    key: "subsidies",
+    ic: "$",
+    color: "green",
+    title: "Find every subsidy",
+    desc: "Programmes are postcode-specific. These official tools list what your building qualifies for.",
+    links: [
+      { label: "energiefranken.ch", sub: "Enter your PLZ — every grant, one place", href: "https://www.energiefranken.ch" },
+      { label: "Das Gebäudeprogramm", sub: "Envelope & insulation — file before works", href: "https://www.dasgebaeudeprogramm.ch" },
+    ],
+  },
+  {
+    key: "advisor",
+    ic: "E",
+    color: "acc",
+    title: "Energy advisor (GEAK)",
+    desc: "A certified expert runs the formal audit that unlocks the advisory grant and the roadmap.",
+    links: [
+      { label: "GEAK expert finder", sub: "Certified GEAK Plus advisors", href: "https://www.geak.ch" },
+      { label: "EnergieSchweiz", sub: "Federal advice & tools", href: "https://www.energieschweiz.ch" },
+    ],
+  },
+  {
+    key: "pros",
+    ic: "A",
+    color: "coral",
+    title: "Architects & builders",
+    desc: "Minergie-experienced practices and certified installers for envelope, heat-pump and PV work.",
+    links: [
+      { label: "Minergie partners", sub: "Find certified architects & trades", href: "https://www.minergie.ch" },
+      { label: "Das Gebäudeprogramm", sub: "Eligible-measure requirements", href: "https://www.dasgebaeudeprogramm.ch" },
+    ],
+  },
+  {
+    key: "solar",
+    ic: "PV",
+    color: "purple",
+    title: "Solar PV registration",
+    desc: "Register your installation for the federal one-time remuneration after commissioning.",
+    links: [
+      { label: "Pronovo — Einmalvergütung", sub: "Apply for the PV grant (EIV)", href: "https://pronovo.ch/de/foerderung/einmalverguetung/" },
+      { label: "Sonnendach.ch", sub: "Your roof's solar potential", href: "https://www.sonnendach.ch" },
+    ],
+  },
 ];
 
 // ---------- floor plan geometry (viewBox 0 0 600 470) ----------
@@ -375,6 +466,8 @@ export interface SubsidyLine {
   scope: string;
   amount: number;
   upgrade: string;
+  url: string; // official application portal
+  apply: string; // timing rule
 }
 export interface FinishLine {
   room: string;
@@ -445,6 +538,8 @@ export function computePlan(listing: Listing, state: PlanState): ComputedPlan {
         scope: prog ? prog.scope : "",
         amount: sub,
         upgrade: u.name,
+        url: prog ? prog.url : "",
+        apply: prog ? prog.apply : "",
       });
     }
   });
