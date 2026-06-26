@@ -1,9 +1,9 @@
 "use client";
-/* Reimagine — the core workspace: upgrade catalog · floor-plan canvas · live ledger */
-import React, { useState } from "react";
-import { upgrades as UPGRADES, finishes as FINISHES, rooms as ROOMS, geak, fmt, type Listing, type PlanState, type ComputedPlan, type Upgrade } from "@/app/lib/data";
+/* Reimagine — the core workspace: upgrade catalog · building canvas · live ledger */
+import React from "react";
+import { upgrades as UPGRADES, geak, fmt, type Listing, type PlanState, type ComputedPlan, type Upgrade } from "@/app/lib/data";
 import { Brand, GeakBadge, AnimatedCHF, AnimatedNum } from "./primitives";
-import { FloorPlan } from "./FloorPlan";
+import { BuildingCanvas } from "./BuildingCanvas";
 
 interface ReimagineProps {
   listing: Listing;
@@ -17,8 +17,7 @@ interface ReimagineProps {
   onBack: () => void;
 }
 
-export function Reimagine({ listing, state, computed, view, setView, onToggleSystem, onSetFinish, onOpenSummary, onBack }: ReimagineProps) {
-  const [selRoom, setSelRoom] = useState<string | null>(null);
+export function Reimagine({ listing, state, computed, view, setView, onToggleSystem, onOpenSummary, onBack }: ReimagineProps) {
   const area = listing.area;
 
   const groups: { id: string; label: string }[] = [
@@ -30,7 +29,6 @@ export function Reimagine({ listing, state, computed, view, setView, onToggleSys
   const subOf = (u: Upgrade) => Math.min(costOf(u) * u.subsidyRate, u.subsidyCap);
 
   const activeSystems = UPGRADES.filter((u) => state.systems.includes(u.id));
-  const room = selRoom ? ROOMS.find((r) => r.id === selRoom) : null;
   const grades = geak.grades;
 
   return (
@@ -117,7 +115,7 @@ export function Reimagine({ listing, state, computed, view, setView, onToggleSys
         <div className="canvas-wrap blueprint-bg">
           <div className="canvas-head">
             <span className="ch-title">
-              <b>Grundriss</b> · {listing.type}
+              <b>{listing.footprint ? "Real building" : "Building"}</b> · {listing.type || "Gebäude"} · top-down
             </span>
             <div className="spacer" style={{ flex: 1 }}></div>
             {activeSystems.length > 0 && (
@@ -132,64 +130,24 @@ export function Reimagine({ listing, state, computed, view, setView, onToggleSys
           </div>
 
           <div className="canvas-stage">
-            <FloorPlan
-              listing={listing}
-              state={state}
-              view={view}
-              selectedRoom={selRoom}
-              onSelectRoom={(id) => setSelRoom(id === selRoom ? null : id)}
-            />
+            <BuildingCanvas listing={listing} state={state} view={view} onToggleSystem={onToggleSystem} />
 
             <div className="legend">
               <span className="li">
-                <span className="sw" style={{ background: "var(--bg-2)", border: "1px solid var(--line-2)" }}></span> Room
-              </span>
-              <span className="li">
-                <span className="marker-key">WP</span> Heat pump
-              </span>
-              <span className="li">
-                <span className="marker-key" style={{ background: "var(--purple)" }}>
-                  LÜ
-                </span>{" "}
-                Ventilation
+                <span className="sw" style={{ background: "#e9ece9", border: "1px solid var(--line-2)" }}></span> Roof / footprint
               </span>
               <span className="li">
                 <span className="sw" style={{ background: "var(--green)" }}></span> Insulation
               </span>
+              <span className="li">
+                <span className="marker-key">WP</span> Heat pump
+              </span>
               <span className="li" style={{ color: "var(--faint)" }}>
-                Click a room to change its finish
+                {view === "after"
+                  ? "Click a label on the building to add / remove it"
+                  : "Switch to After to see upgrades on the building"}
               </span>
             </div>
-
-            {/* finish picker */}
-            {room && (
-              <div className="finish-bar">
-                <div className="fb-head">
-                  <div className="t">
-                    Finish · <b>{room.name}</b>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span className="area">{room.area} m²</span>
-                    <button className="btn ghost sm" onClick={() => setSelRoom(null)}>
-                      ✕
-                    </button>
-                  </div>
-                </div>
-                <div className="finish-opts">
-                  {FINISHES.map((f) => {
-                    const cur = (state.finishes[room.id] || "keep") === f.id;
-                    return (
-                      <div key={f.id} className={"finish-opt" + (cur ? " on" : "")} onClick={() => onSetFinish(room.id, f.id)}>
-                        <div className="sw" style={{ background: f.swatch }}></div>
-                        <div className="nm">{f.name}</div>
-                        <div className="pm">{f.perM2 ? "CHF " + f.perM2 + "/m²" : "—"}</div>
-                        {f.eco && <div className="eco">● LOW-CO₂</div>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -258,12 +216,14 @@ export function Reimagine({ listing, state, computed, view, setView, onToggleSys
                   <AnimatedCHF value={computed.systemsCost} />
                 </span>
               </div>
-              <div className="cost-row">
-                <span className="k">Interior finishes</span>
-                <span className="v">
-                  <AnimatedCHF value={computed.finishCost} />
-                </span>
-              </div>
+              {computed.finishCost > 0 && (
+                <div className="cost-row">
+                  <span className="k">Interior finishes</span>
+                  <span className="v">
+                    <AnimatedCHF value={computed.finishCost} />
+                  </span>
+                </div>
+              )}
               <div className="cost-row sub">
                 <span className="k">− Subsidies &amp; grants</span>
                 <span className="v">

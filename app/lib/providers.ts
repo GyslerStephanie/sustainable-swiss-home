@@ -67,6 +67,7 @@ export function buildingFromGwr(record: {
   coords: { lat: number; lng: number }; // from GWR GKODE/GKODN (LV95 → WGS84)
   footprint?: [number, number][]; // building outline (WGS84 ring)
   solar?: SolarPotential; // sonnendach rooftop solar potential
+  floors?: number; // above-ground floors (GWR GASTW)
   price?: number;
   measuredEnergy?: number; // kWh/m²·yr if known
 }): Listing {
@@ -86,6 +87,7 @@ export function buildingFromGwr(record: {
     coords: record.coords, // GWR supplies GKODE/GKODN → WGS84
     footprint: record.footprint,
     solar: record.solar,
+    floors: record.floors,
   };
 }
 

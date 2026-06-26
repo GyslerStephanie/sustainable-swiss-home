@@ -37,6 +37,7 @@ export async function GET(req: Request) {
       coords: b.coords,
       footprint: b.footprint,
       solar: b.solar,
+      floors: b.floors,
     });
     return NextResponse.json({ source: "gwr", egid: b.egid, listing });
   } catch (e) {

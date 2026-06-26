@@ -46,6 +46,7 @@ export interface Listing {
   coords: { lat: number; lng: number }; // real WGS84 location for the map
   footprint?: [number, number][]; // real building outline (WGS84 [lng,lat] ring) — GWR/cadastre
   solar?: SolarPotential; // rooftop solar potential — swisstopo sonnendach
+  floors?: number; // above-ground floors (GWR GASTW)
 }
 
 /** Rooftop solar potential from swisstopo's solar cadastre (sonnendach.ch),

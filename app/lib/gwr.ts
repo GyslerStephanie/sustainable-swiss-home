@@ -41,6 +41,7 @@ export interface GwrBuilding {
   coords: { lat: number; lng: number };
   footprint?: [number, number][]; // building outline (WGS84 [lng,lat] ring)
   solar?: SolarRoof;
+  floors?: number; // GASTW (above-ground floors)
 }
 
 /* LV95 (EPSG:2056) → WGS84, swisstopo's published approximate formulas.
@@ -206,6 +207,7 @@ async function normalize(
     coords,
     footprint: ringToWgs84(feat?.geometry),
     solar: solar ?? undefined,
+    floors: floors || undefined,
   };
 }
 
