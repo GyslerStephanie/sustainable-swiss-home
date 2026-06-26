@@ -91,7 +91,33 @@ export function buildingFromGwr(record: {
   };
 }
 
-/* ---------- active provider ----------
-   Swap to a real provider here (or select via env) once implemented.
+/* ---------- 3. feed provider (IDX / OpenImmo) ----------
+   Pulls a real listings feed from LISTINGS_FEED_URL (an agency export or a
+   CASAGATEWAY/aggregator endpoint) and maps it via the importer. Activate by
+   setting LISTINGS_FEED_URL in the environment — no code change needed.
+   (For push-style delivery, add an /api/import route that accepts the XML and
+   stores it; this pull variant is the simplest to start with.)
 */
-export const activeProvider: ListingProvider = mockProvider;
+export const feedProvider: ListingProvider = {
+  id: "feed",
+  label: "Live IDX/OpenImmo feed",
+  async list(query) {
+    const url = process.env.LISTINGS_FEED_URL;
+    if (!url) return [];
+    const { parseOpenImmo } = await import("./importers/openimmo");
+    const xml = await fetch(url, { cache: "no-store" }).then((r) => r.text());
+    let out = parseOpenImmo(xml);
+    if (query?.zip) out = out.filter((l) => l.zip.startsWith(query.zip!));
+    if (query?.district) out = out.filter((l) => l.district === query.district);
+    if (query?.maxPrice != null) out = out.filter((l) => l.price <= query.maxPrice!);
+    return out;
+  },
+  async get(id) {
+    return (await this.list()).find((l) => l.id === id) ?? null;
+  },
+};
+
+/* ---------- active provider ----------
+   Uses the live feed when LISTINGS_FEED_URL is configured, else the seed data.
+*/
+export const activeProvider: ListingProvider = process.env.LISTINGS_FEED_URL ? feedProvider : mockProvider;
