@@ -7,6 +7,29 @@ import { encodeShare } from "@/app/lib/share";
 import { Brand, Steps, GeakBadge } from "./primitives";
 import { MapView } from "./MapView";
 
+/* A collapsible dossier section. Body stays in the DOM (just hidden) so PDF
+   export still includes collapsed sections. */
+function Section({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = React.useState(defaultOpen);
+  return (
+    <div className={"doc-sec" + (open ? "" : " collapsed")}>
+      <h2 className="sec-toggle" onClick={() => setOpen((o) => !o)}>
+        <span className="chev">{open ? "▾" : "▸"}</span>
+        {title}
+      </h2>
+      <div className="sec-body">{children}</div>
+    </div>
+  );
+}
+
 interface SummaryProps {
   listing: Listing;
   state: PlanState;
@@ -139,8 +162,10 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
           <div className="dossier-kpis">
             <div className="kpi">
               <div className="kl">Energy rating</div>
-              <div className="kv acc">
-                {computed.baseGrade}→{computed.newGrade}
+              <div className="kv kv-geak">
+                <GeakBadge grade={computed.baseGrade} size={22} />
+                <span className="kv-arrow">→</span>
+                <GeakBadge grade={computed.newGrade} size={28} />
               </div>
               <div className="kd">{computed.energyUse} kWh/m²·yr</div>
             </div>
@@ -175,8 +200,7 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
           )}
 
           {/* Location */}
-          <div className="doc-sec">
-            <h2>Location</h2>
+          <Section title="Location">
             <div className="dossier-map">
               <MapView listings={[listing]} selectedId={listing.id} onSelect={() => {}} />
             </div>
@@ -184,11 +208,10 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
               {listing.zip} {listing.district}
               {listing.footprint ? " · building outline from the federal cadastre" : ""}
             </p>
-          </div>
+          </Section>
 
           {/* Cost breakdown */}
-          <div className="doc-sec">
-            <h2>Cost breakdown</h2>
+          <Section title="Cost breakdown">
             <table className="dtable">
               <thead>
                 <tr>
@@ -234,12 +257,11 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
                 </tr>
               </tfoot>
             </table>
-          </div>
+          </Section>
 
           {/* Subsidies */}
           {computed.subsidyLines.length > 0 && (
-            <div className="doc-sec">
-              <h2>Subsidies &amp; grants</h2>
+            <Section title="Subsidies & grants">
               <table className="dtable">
                 <thead>
                   <tr>
@@ -285,12 +307,11 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
                 Indicative. Exact amounts and eligibility change yearly and by canton — confirm on each portal.
                 Most grants must be filed <b>before</b> works begin (PV is registered after commissioning).
               </p>
-            </div>
+            </Section>
           )}
 
           {/* Financing */}
-          <div className="doc-sec">
-            <h2>Financing assumptions</h2>
+          <Section title="Financing assumptions" defaultOpen={false}>
             <table className="dtable">
               <tbody>
                 <tr>
@@ -322,11 +343,10 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
                 </tr>
               </tbody>
             </table>
-          </div>
+          </Section>
 
           {/* Roadmap */}
-          <div className="doc-sec">
-            <h2>Phased roadmap</h2>
+          <Section title="Phased roadmap" defaultOpen={false}>
             <div className="roadmap">
               {steps.map((s, i) => (
                 <div className="rm-step" key={i}>
@@ -339,11 +359,10 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
                 </div>
               ))}
             </div>
-          </div>
+          </Section>
 
           {/* Connect */}
-          <div className="doc-sec">
-            <h2>Connect — apply, and take it to the people who build</h2>
+          <Section title="Connect — apply, and take it to the people who build">
             <div className="connect-grid">
               {DIRECTORY.map((c) => (
                 <div className="connect-card" key={c.key}>
@@ -372,17 +391,16 @@ export function Summary({ listing, state, computed, onBack, onPrint }: SummaryPr
               Opens your mail app with the building, target rating, measures and indicative costs prefilled. Links are
               official / authoritative directories — not paid placements.
             </p>
-          </div>
+          </Section>
 
           {/* Methodology */}
-          <div className="doc-sec">
-            <h2>Methodology &amp; sources</h2>
+          <Section title="Methodology & sources" defaultOpen={false}>
             <ul className="method-list">
               {ASSUMPTIONS.map((a, i) => (
                 <li key={i}>{a}</li>
               ))}
             </ul>
-          </div>
+          </Section>
         </div>
       </div>
     </div>

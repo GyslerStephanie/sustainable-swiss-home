@@ -243,15 +243,18 @@ button { font-family: inherit; cursor: pointer; }
 .discover-cta { padding: 16px 24px; border-top: 1px solid var(--line); display: flex; gap: 12px; align-items: center; }
 .discover-cta .hint { font-size: 12.5px; color: var(--faint); flex: 1; }
 
+/* GEAK letter badge — base style (applies wherever GeakBadge is used) */
+.badge {
+  display: grid; place-items: center; border-radius: 7px; color: #fff;
+  font-family: var(--mono); font-weight: 800; line-height: 1;
+  box-shadow: var(--shadow-sm); flex: none;
+}
 /* small geak chip */
 .geak-chip {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--mono); font-size: 11px; font-weight: 700;
 }
-.geak-chip .badge {
-  width: 22px; height: 22px; border-radius: 6px; color: #fff;
-  display: grid; place-items: center; font-size: 12px;
-}
+.geak-chip .badge { width: 22px; height: 22px; font-size: 12px; }
 .gb-A { background: var(--geak-a);} .gb-B { background: var(--geak-b);}
 .gb-C { background: var(--geak-c);} .gb-D { background: var(--geak-d);}
 .gb-E { background: var(--geak-e);} .gb-F { background: var(--geak-f);}
@@ -486,11 +489,25 @@ button { font-family: inherit; cursor: pointer; }
 .kpi .kl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
 .kpi .kv { font-family: var(--mono); font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
 .kpi .kv.green { color: var(--green-2); } .kpi .kv.acc { color: var(--acc-2); }
+.kpi .kv.kv-geak { display: flex; align-items: center; gap: 8px; }
+.kpi .kv-arrow { color: var(--faint); font-size: 16px; }
 .kpi .kd { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
 
 .doc-sec { margin-bottom: 36px; }
 .doc-sec h2 { font-size: 14px; font-family: var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--acc-2); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
 .doc-sec h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+/* collapsible sections */
+.doc-sec h2.sec-toggle { cursor: pointer; user-select: none; }
+.doc-sec h2.sec-toggle:hover { color: var(--acc); }
+.doc-sec .chev { color: var(--faint); font-size: 11px; width: 12px; text-align: center; }
+.doc-sec.collapsed { margin-bottom: 18px; }
+.doc-sec.collapsed h2 { margin-bottom: 0; }
+.doc-sec.collapsed .sec-body { display: none; }
+/* PDF export includes everything regardless of collapse state */
+@media print {
+  .doc-sec.collapsed .sec-body { display: block !important; }
+  .doc-sec .chev { display: none; }
+}
 .dtable { width: 100%; border-collapse: collapse; font-size: 14px; }
 .dtable th, .dtable td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); }
 .dtable thead th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); font-weight: 700; }
