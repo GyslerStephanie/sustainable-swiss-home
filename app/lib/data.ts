@@ -49,6 +49,17 @@ export interface Listing {
   floors?: number; // above-ground floors (GWR GASTW)
 }
 
+/** A room read from an uploaded floor plan by the vision model.
+    Bounding box is in image fractions (0..1), origin top-left. */
+export interface DetectedRoom {
+  name: string;
+  area_m2: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 /** Rooftop solar potential from swisstopo's solar cadastre (sonnendach.ch),
     summed over a building's roof surfaces by EGID. */
 export interface SolarPotential {
@@ -515,7 +526,13 @@ export interface ComputedPlan {
 }
 
 // ---------- the calculation engine ----------
-export function computePlan(listing: Listing, state: PlanState): ComputedPlan {
+export function computePlan(
+  listing: Listing,
+  state: PlanState,
+  // finish rooms — defaults to the schematic set; an uploaded+vectorised plan
+  // passes its own real rooms so interior-finish costs reflect them.
+  roomList: { id: string; name: string; area: number; finish: boolean }[] = rooms
+): ComputedPlan {
   const area = listing.area;
   const active = upgrades.filter((u) => state.systems.includes(u.id));
 
@@ -559,7 +576,7 @@ export function computePlan(listing: Listing, state: PlanState): ComputedPlan {
   let finishCost = 0,
     finishEmbodied = 0;
   const finishLines: FinishLine[] = [];
-  rooms.forEach((r) => {
+  roomList.forEach((r) => {
     if (!r.finish) return;
     const fid = state.finishes[r.id] || "keep";
     const f = finishById(fid);

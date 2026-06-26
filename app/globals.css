@@ -329,6 +329,30 @@ button { font-family: inherit; cursor: pointer; }
 }
 .plan-svg { width: 100%; max-width: 720px; height: auto; filter: drop-shadow(var(--shadow-md)); }
 
+/* uploaded floor plan + AI-detected rooms */
+.plan-overlay { position: relative; width: 100%; max-width: 760px; }
+.plan-overlay.no-img { aspect-ratio: 4 / 3; background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; }
+.plan-img { width: 100%; display: block; border-radius: 12px; box-shadow: var(--shadow-md); }
+.plan-room {
+  position: absolute; box-sizing: border-box;
+  border: 2px solid var(--acc-2); border-radius: 5px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; overflow: hidden; transition: border-color 0.12s, background 0.12s;
+}
+.plan-room:hover { border-color: var(--acc); background: rgba(47, 125, 91, 0.12); }
+.plan-room.sel { border-color: var(--coral); border-width: 3px; }
+.plan-room.has-finish { opacity: 0.62; }
+.plan-room .pr-label {
+  font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--text);
+  background: rgba(255, 255, 255, 0.78); padding: 0 4px; border-radius: 3px; max-width: 96%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.plan-room .pr-area {
+  font-family: var(--mono); font-size: 9px; color: var(--muted);
+  background: rgba(255, 255, 255, 0.7); padding: 0 4px; border-radius: 3px; margin-top: 2px;
+}
+.plan-err { margin-top: 12px; color: var(--coral); font-size: 12.5px; max-width: 520px; text-align: center; }
+
 /* building canvas (real footprint, top-down) */
 .bld-svg { width: 100%; max-width: 760px; height: auto; }
 .bld-area { font-family: var(--sans); font-size: 24px; font-weight: 700; fill: var(--text); }

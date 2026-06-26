@@ -2,7 +2,7 @@
 /* Root app — routing, lifted plan state, localStorage persistence.
    Ported from project/app/app.jsx */
 import React, { useState, useEffect } from "react";
-import { listings, computePlan, type PlanState, type Listing } from "@/app/lib/data";
+import { listings, computePlan, type PlanState, type Listing, type DetectedRoom } from "@/app/lib/data";
 import { decodeShare } from "@/app/lib/share";
 import { Discover } from "./Discover";
 import { Reimagine } from "./Reimagine";
@@ -38,6 +38,9 @@ export function AppRoot() {
   const [plan, setPlan] = useState<PlanState>({ systems: [], finishes: {} });
   // a building pulled live from the GWR (not in the seed list)
   const [external, setExternal] = useState<Listing | null>(null);
+  // an uploaded floor plan + rooms read from it by the vision model (Phase 2)
+  const [planImg, setPlanImg] = useState<string | null>(null);
+  const [planRooms, setPlanRooms] = useState<DetectedRoom[] | null>(null);
 
   useEffect(() => {
     // A shared link (#plan=…) wins over local state — open its dossier directly.
@@ -80,11 +83,23 @@ export function AppRoot() {
 
   const listing =
     (external && external.id === selectedId ? external : listings.find((l) => l.id === selectedId)) || null;
-  const computed = listing ? computePlan(listing, plan) : null;
+  // when a floor plan has been uploaded + read, its real rooms drive finish costs
+  const finishRooms = planRooms
+    ? planRooms.map((r, i) => ({ id: `det-${i}`, name: r.name, area: r.area_m2, finish: true }))
+    : undefined;
+  const computed = listing ? computePlan(listing, plan, finishRooms) : null;
 
   const onExternalListing = (l: Listing) => {
     setExternal(l);
     setSelectedId(l.id);
+  };
+  const onPlanDetected = (img: string, rms: DetectedRoom[]) => {
+    setPlanImg(img);
+    setPlanRooms(rms);
+  };
+  const clearPlan = () => {
+    setPlanImg(null);
+    setPlanRooms(null);
   };
 
   const toggleSystem = (id: string) =>
@@ -139,6 +154,10 @@ export function AppRoot() {
       onSetFinish={setFinish}
       onOpenSummary={() => setScreen("summary")}
       onBack={() => setScreen("discover")}
+      planImg={planImg}
+      planRooms={planRooms}
+      onPlanDetected={onPlanDetected}
+      onClearPlan={clearPlan}
     />
   );
 }

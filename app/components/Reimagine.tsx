@@ -1,9 +1,10 @@
 "use client";
 /* Reimagine — the core workspace: upgrade catalog · floor-plan canvas · live ledger */
-import React, { useState } from "react";
-import { upgrades as UPGRADES, finishes as FINISHES, rooms as ROOMS, geak, fmt, type Listing, type PlanState, type ComputedPlan, type Upgrade } from "@/app/lib/data";
+import React, { useState, useRef } from "react";
+import { upgrades as UPGRADES, finishes as FINISHES, rooms as ROOMS, geak, fmt, type Listing, type PlanState, type ComputedPlan, type Upgrade, type DetectedRoom } from "@/app/lib/data";
 import { Brand, GeakBadge, AnimatedCHF, AnimatedNum } from "./primitives";
 import { FloorPlan } from "./FloorPlan";
+import { PlanOverlay } from "./PlanOverlay";
 
 interface ReimagineProps {
   listing: Listing;
@@ -15,10 +16,31 @@ interface ReimagineProps {
   onSetFinish: (roomId: string, fid: string) => void;
   onOpenSummary: () => void;
   onBack: () => void;
+  planImg: string | null;
+  planRooms: DetectedRoom[] | null;
+  onPlanDetected: (img: string, rooms: DetectedRoom[]) => void;
+  onClearPlan: () => void;
 }
 
-export function Reimagine({ listing, state, computed, view, setView, onToggleSystem, onSetFinish, onOpenSummary, onBack }: ReimagineProps) {
+export function Reimagine({
+  listing,
+  state,
+  computed,
+  view,
+  setView,
+  onToggleSystem,
+  onSetFinish,
+  onOpenSummary,
+  onBack,
+  planImg,
+  planRooms,
+  onPlanDetected,
+  onClearPlan,
+}: ReimagineProps) {
   const [selRoom, setSelRoom] = useState<string | null>(null);
+  const [vecStatus, setVecStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [vecErr, setVecErr] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
   const area = listing.area;
 
   const groups: { id: string; label: string }[] = [
@@ -30,8 +52,57 @@ export function Reimagine({ listing, state, computed, view, setView, onToggleSys
   const subOf = (u: Upgrade) => Math.min(costOf(u) * u.subsidyRate, u.subsidyCap);
 
   const activeSystems = UPGRADES.filter((u) => state.systems.includes(u.id));
-  const room = selRoom ? ROOMS.find((r) => r.id === selRoom) : null;
   const grades = geak.grades;
+  const hasPlan = !!planRooms;
+
+  // the currently-selected finish room, from the uploaded plan or the schematic
+  const room: { id: string; name: string; area: number } | null = selRoom
+    ? planRooms
+      ? (() => {
+          const i = Number(selRoom.replace("det-", ""));
+          const r = planRooms[i];
+          return r ? { id: selRoom, name: r.name, area: Math.round(r.area_m2) } : null;
+        })()
+      : ROOMS.find((r) => r.id === selRoom) ?? null
+    : null;
+
+  async function uploadPlan(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (e.target) e.target.value = ""; // allow re-uploading the same file
+    if (!file) return;
+    const ok = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
+    if (!ok.includes(file.type)) {
+      setVecStatus("error");
+      setVecErr("Use a PNG, JPG, WEBP, or PDF");
+      return;
+    }
+    setVecStatus("loading");
+    setVecErr("");
+    try {
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(String(fr.result));
+        fr.onerror = () => reject(new Error("Could not read the file"));
+        fr.readAsDataURL(file);
+      });
+      const base64 = dataUrl.split(",")[1] ?? "";
+      const res = await fetch("/api/vectorize-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: base64, mediaType: file.type }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Could not read the floor plan");
+      const rooms: DetectedRoom[] = json.rooms || [];
+      if (!rooms.length) throw new Error("No rooms detected — try a clearer floor-plan image");
+      onPlanDetected(file.type === "application/pdf" ? "" : dataUrl, rooms);
+      setSelRoom(null);
+      setVecStatus("idle");
+    } catch (err) {
+      setVecStatus("error");
+      setVecErr(err instanceof Error ? err.message : "Upload failed");
+    }
+  }
 
   return (
     <div className="workspace">
@@ -117,9 +188,29 @@ export function Reimagine({ listing, state, computed, view, setView, onToggleSys
         <div className="canvas-wrap blueprint-bg">
           <div className="canvas-head">
             <span className="ch-title">
-              <b>Grundriss</b> · {listing.type}
+              <b>{hasPlan ? "Your floor plan" : "Grundriss"}</b> · {listing.type}
             </span>
             <div className="spacer" style={{ flex: 1 }}></div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,application/pdf"
+              style={{ display: "none" }}
+              onChange={uploadPlan}
+            />
+            {hasPlan ? (
+              <button className="btn ghost sm" onClick={onClearPlan}>
+                ✕ Use schematic
+              </button>
+            ) : (
+              <button
+                className="btn sm"
+                onClick={() => fileRef.current?.click()}
+                disabled={vecStatus === "loading"}
+              >
+                {vecStatus === "loading" ? "Reading plan…" : "⤓ Upload floor plan"}
+              </button>
+            )}
             {activeSystems.length > 0 && (
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {activeSystems.map((u) => (
@@ -132,34 +223,61 @@ export function Reimagine({ listing, state, computed, view, setView, onToggleSys
           </div>
 
           <div className="canvas-stage">
-            <FloorPlan
-              listing={listing}
-              state={state}
-              view={view}
-              selectedRoom={selRoom}
-              onSelectRoom={(id) => setSelRoom(id === selRoom ? null : id)}
-            />
+            {hasPlan ? (
+              <PlanOverlay
+                img={planImg ?? ""}
+                rooms={planRooms!}
+                state={state}
+                view={view}
+                selectedRoom={selRoom}
+                onSelectRoom={(id) => setSelRoom(id === selRoom ? null : id)}
+              />
+            ) : (
+              <FloorPlan
+                listing={listing}
+                state={state}
+                view={view}
+                selectedRoom={selRoom}
+                onSelectRoom={(id) => setSelRoom(id === selRoom ? null : id)}
+              />
+            )}
 
             <div className="legend">
-              <span className="li">
-                <span className="sw" style={{ background: "var(--bg-2)", border: "1px solid var(--line-2)" }}></span> Room
-              </span>
-              <span className="li">
-                <span className="marker-key">WP</span> Heat pump
-              </span>
-              <span className="li">
-                <span className="marker-key" style={{ background: "var(--purple)" }}>
-                  LÜ
-                </span>{" "}
-                Ventilation
-              </span>
-              <span className="li">
-                <span className="sw" style={{ background: "var(--green)" }}></span> Insulation
-              </span>
-              <span className="li" style={{ color: "var(--faint)" }}>
-                Click a room to change its finish
-              </span>
+              {hasPlan ? (
+                <>
+                  <span className="li">
+                    <span className="sw" style={{ background: "var(--bg-2)", border: "1px solid var(--line-2)" }}></span> Detected room
+                  </span>
+                  <span className="li" style={{ color: "var(--faint)" }}>
+                    Read from your plan by AI · click a room to set its finish
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="li">
+                    <span className="sw" style={{ background: "var(--bg-2)", border: "1px solid var(--line-2)" }}></span> Room
+                  </span>
+                  <span className="li">
+                    <span className="marker-key">WP</span> Heat pump
+                  </span>
+                  <span className="li">
+                    <span className="marker-key" style={{ background: "var(--purple)" }}>
+                      LÜ
+                    </span>{" "}
+                    Ventilation
+                  </span>
+                  <span className="li">
+                    <span className="sw" style={{ background: "var(--green)" }}></span> Insulation
+                  </span>
+                  <span className="li" style={{ color: "var(--faint)" }}>
+                    Click a room to change its finish · or upload your real plan
+                  </span>
+                </>
+              )}
             </div>
+            {vecStatus === "error" && (
+              <div className="plan-err">{vecErr}</div>
+            )}
 
             {/* finish picker */}
             {room && (
